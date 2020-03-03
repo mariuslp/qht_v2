@@ -145,23 +145,14 @@ When $|\Gamma| > 2 \log_2 w$ this DDF outperforms the naive strategy, both in te
 
 Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
-\section{Unsuitability of Most Filters for Duplicate Detection over a Sliding Window}
-While the duplicate detection problem over a sliding window is only but a slight reformulation of the original problem of duplicate detection, it turns out that most streaming filters which perform well in the latter problem are not as performant in the former.
+\subsection{DDP vs Sliding Window DDP}
+The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{SQFs are a special case of QHTs \cite{10.1145/3297280.3297335}. As such, only QHT will be discussed.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
 
-From our literature reviews, there are 6 competing duplicate filters adapted for streaming data: 
-\begin{itemize}
-	\item A2 filters \cite{Yoo10}
-	\item Stable Bloom Filters (SBF) \cite{Den06}
-	\item Streaming Quotient Filters (SQF)\footnote{It has been shown in \cite{10.1145/3297280.3297335} that SQFs are strictly less efficient than QHTs. As such, they will not be used in the rest of this paper.} \cite{Dut13}
-	\item Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}
-	\item Block-decaying Bloom Filters (b\_DBF) \cite{She08}
-	\item A variation of Cuckoo Filters \cite{Fan14}, suggested by \cite{10.1145/3297280.3297335}
-\end{itemize}
 \todo[Regarder https://www2005.org/cdrom/docs/p12.pdf]
 
-All these filters except the b\_DBF were not defined in the context of a sliding window $W$. As a consequence, their parameters do not depend on $W$, and as such, behave poorly when used in the paradigm of duplicate detection over a sliding window.
+Of these, only the b\_DBF was defined in the context of a sliding window. The others do not account for a finite-length sliding window, and cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
-Experimentally, we observe that the false positive rate of these filters does not decrease to 0 even though the sliding window becomes small; this is because in these filters, 
+\todo[Expliquer ?]
 
 
 \section{Queuing Filters for Sliding Window Adaptation}
