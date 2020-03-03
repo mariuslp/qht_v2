@@ -54,15 +54,15 @@
 \subsection{Motivation}
 
 \paragraph{Duplicate detection problem.}
-We consider the following problem (duplicate detection problem, DPP): given a stream $S_t = \{s_t, s_{t-1}, \dotsc\}$ and an item $s^\star$, find whether $s^\star \in S_t$. It is understood that the stream $S_t$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, using polynomially many resources (time and memory) in $1/\epsilon$. 
+We consider the following problem (duplicate detection problem, DPP): given a stream $E_n = \{e_1, e_2, \dotsc, E_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
 
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
-Even when the stream is bounded, i.e. $\lim_{t\to\infty}|S_t| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
+Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
 
-\paragraph{Approximate and exact DPP.}
-One way to relax the DPP is to allow \emph{approximate} duplicate detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. We instead focus on \emph{exact} duplicate detection, in which an element is considered a duplicate if and only if it has already appeared in the stream. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates over an alphabet of $U$ letters requires $U$ bits of memory. 
+\paragraph{Fuzzy and approximate DPP}
+A quite popular research topic on the subject of duplicate detection is \emph{fuzzy} detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact ame element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates over an alphabet of $U$ letters requires $U$ bits of memory, thus being impracticable in many cases.
 
-As it turns out, exact duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
+As it turns out, approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
 
 \todo[continuer].
 
@@ -75,15 +75,15 @@ As it turns out, exact duplicate detection has many real-life use cases, and can
 
 \section{Duplicate Detection and Filter Saturation}
 \subsection{Notations and Initial Problem Statement}
-Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly infinite) collection $E = \{e_1, e_2, \dotsc\}$, with each $e_i \in \Gamma$.
+Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly infinite) set $E = \{e_1, e_2, \dotsc\}$, with each $e_i \in \Gamma$.
 
 \begin{definition}[Duplicate and unseen element]
-Let $E = \{e_i\}$ be a stream over $\Gamma$. Some element $e_j \in E$ is called a \emph{duplicate} if and only if there exists $i < j$ such that $e_i = e_j$. In that case we write $e_j \in^2 E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notin^2 E$.
+Let $E = \{e_1, e_2, \dotsc\}$ be a stream over $\Gamma$. Some element $e_j \in E$ is called a \emph{duplicate} if and only if there exists $i < j$ such that $e_i = e_j$. In that case we write $e_j \dup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notdup E$.
 \end{definition}
 
 \begin{definition}[Duplicate detection filter]
-	A \emph{duplicate detection filter} (DDF) is a collection of two algorithms 
-	$\mathcal F = (\mathcal S, \mathsf{Insert}, \mathsf{Detect})$ of a state $\mathcal S \in \mathcal M$\footnote{Here, $\mathcal M$ denotes all the memory states that can be reached by the filter.} and two algorithms,
+	A \emph{duplicate detection filter} (DDF) is a collection 
+	$\mathcal F = (\mathcal S, \mathsf{Insert}, \mathsf{Detect})$ of a state\footnote{Here, $\mathcal M$ denotes all the memory states that can be reached by the filter.} $\mathcal S \in \mathcal M$ and two algorithms,
 	\begin{itemize}
 		\item $\mathsf{Detect}: \mathcal M \times \Gamma \to \{\DUPLICATE, \UNSEEN\}$;
 		\item $\mathsf{Insert}: \mathcal M \times \Gamma \to \mathcal M$.
@@ -91,10 +91,10 @@ Let $E = \{e_i\}$ be a stream over $\Gamma$. Some element $e_j \in E$ is called 
 	Informally, the $\mathsf{Detect}$ algorithm tentatively labels an element $e$ as duplicate or not, given the current state $\mathcal S$; whereas $\mathsf{Insert}$ takes as input the current state, an element $e$ to insert in the filter, and returns an updated memory state $\mathcal S'$. 
 \end{definition}
 
-We will usually consider the situations where the available memory is too small for perfect detection, i.e., $|\mathsf S| \ll |\Gamma|$.
+We will usually consider the situations where the available memory is too small for perfect detection, i.e., $|\mathcal S| \ll |\Gamma|$.
 
 \begin{definition}[False positive, false negative]
-	Let $e \in^2 E$ (resp. $e \notin^2 E$) and $\mathcal F$ be a filter. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) when $\mathcal F.\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
+	Let $e \dup E$ (resp. $e \notdup E$) and $\mathcal F$ be a filter. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) when $\mathcal F.\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
 \end{definition}
 
 \begin{definition}[False positive rate, false negative rate]
@@ -102,7 +102,7 @@ We will usually consider the situations where the available memory is too small 
 \end{definition}
 
 \subsection{Filter Saturation and Sliding Windows}
-Unfortunately, duplicate detection over an infinite stream has the following effect. Since a DDF can only store at most one element per bit \cite[Section 2.1]{10.1145/3297280.3297335}, a DDF of size $M$ can information-theoretically remember at most $M$ elements. Thus after $fM$ insertions (with $f \gg 1$), at most a small fraction $1/f \ll 1$ of the stream can be stored, we say that the DDF is \emph{saturated}. 
+Unfortunately, duplicate detection over an infinite stream has been identified as an ill-posed problem. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
 
 In other terms, any DDF is asymptotically as good as a random guess:
 	\begin{theorem}[\cite{10.1145/3297280.3297335}]\label{thm:sat_u}
@@ -112,14 +112,14 @@ In other terms, any DDF is asymptotically as good as a random guess:
 \end{theorem}
 One way out of this situation is to lower our expectations and work on a sliding window:
 \begin{definition}[Sliding window DDP]
-	Given a stream of fixed size $S_t = \{s_t, \dotsc, s_{t-w}\}$ and an item $s^\star$, find whether $s^\star \in S_t$.
+	Given a stream $E_n$ of fixed size $w$, with $E_n = \{e_{n-w+1}, \dotsc, e_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$.
 \end{definition} 
 We therefore introduce new definitions suited to that setting:
 \begin{definition}[Duplicate element, unseen element over a sliding window]
-	Let $E = \{e_i\}$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \in_w^2 E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notin_w^2 E$.
+	Let $E = \{e_1, e_2, \dotsc\}$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \wdup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notwdup E$.
 \end{definition}
 \begin{definition}[False positive, false negative over a sliding window]
-	Let $w \in \mathbb N$, $e \notin_w^2 E$ (resp. $e \in_w^2 E$) and let $\mathcal F$ be a DDF. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
+	Let $w \in \mathbb N$, $e \notwdup E$ (resp. $e \wdup E$) and let $\mathcal F$ be a DDF. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
 \end{definition}
 
 \begin{definition}[False positive rate, false negative rate over a sliding window]
@@ -127,26 +127,31 @@ We therefore introduce new definitions suited to that setting:
 \end{definition}
 
 \subsection{Bounds on the Sliding Window DDP}
-\todo[R.: je pense qu'on peut donner la probabilité exacte sans beaucoup plus d'effort]
+
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
+	
+	More precisely, it is possible to create a filter with a FNR of $0$, and a FPR of $\frac{1}{w}$.
 \end{theorem}
 
 \begin{proof}
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
-The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ values $h(e_i)$ can be computed before having a collision, i.e., two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ which have the same hash, i.e. $h(e_i) = h(e_j)$.
+The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
-There is no false negative, and a false positive only happens if two elements have the same hash, which does not happen often, hence a low FPR and a zero FNR.
+There is no false negative, and a false positive only happens if the new element to be inserted collides with another element, which happens with probability $\frac 12\frac{2}{w}$, hence an FNR of $0$ and a FPR of $\frac{1}{w}$.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
-When $|\Gamma| > 2 \log_2 w$ this DDF outperforms the naive strategy, both in terms of time and memory. Whether it is possible to bring the value of $M$ below $O(w \log_2 w)$ is an open problem. 
+
+When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naive strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w |\Gamma|$ bits of memory.}, both in terms of time and memory. Whether it is possible to bring the value of $M$ below $O(w \log_2 w)$ is an open problem. 
 
 Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
+Another remark is that when $M \approx w\log_2w$, it may be possible to solve the problem almost optimally in terms of error rate, the proposed solution remains very slow, requiring $O(W)$ computation time (although this complexity can be parallelized). Hence, it remains an open question of how to quickly detect duplicates in this context.
+
 \subsection{DDP vs Sliding Window DDP}
-The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{SQFs are a special case of QHTs \cite{10.1145/3297280.3297335}. As such, only QHT will be discussed.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
+The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. As such, only QHTs will be discussed.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
 
 \todo[Regarder https://www2005.org/cdrom/docs/p12.pdf]
 
@@ -168,7 +173,7 @@ Of these, only the b\_DBF was defined in the context of a sliding window. The ot
 
 %% Bibliography
 \bibliographystyle{ACM-Reference-Format}
-\bibliography{qhtv2.bib}
+\bibliography{qhtv2}
 
 %% Appendix
 %\appendix

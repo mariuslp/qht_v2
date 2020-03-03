@@ -1,6 +1,7 @@
 \documentclass[sigconf]{acmart}
 
 \usepackage{mathtools,amsfonts}
+\usepackage{cancel}
 
 \usepackage{xspace}
 \newcommand*{\FPR}{\textsf{FPR}\xspace}
@@ -8,6 +9,11 @@
 \newcommand*{\DUPLICATE}{\textsf{DUPLICATE}\xspace}
 \newcommand*{\UNSEEN}{\textsf{UNSEEN}\xspace}
 \newcommand*{\todo}[1][]{{\color{red}{TODO: #1}}}
+\newcommand*{\dup}{\in^2}
+\newcommand*{\notdup}{\cancel{\in^2}}
+\newcommand*{\wdup}{\in_w^2}
+\newcommand*{\notwdup}{\, \cancel{\in_w^2}\,}
+
 
 %\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
