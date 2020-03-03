@@ -126,20 +126,20 @@ We therefore introduce new definitions suited to that setting:
 	Let $E$ be a stream, $\mathcal F$ be a filter, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
 \end{definition}
 
-\subsection{Bounds on the Duplicate Detection over a Sliding Window Problem}
+\subsection{Bounds on the Sliding Window DDP}
 
 \begin{theorem}
-	Let $W$ be a sliding window size, and let us consider a duplicate detection problem over $W$. If the available amount of memory $M$ is such that $M \simeq 2W\log_2W$, then the problem can be solved with almost no error.
+	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 \end{theorem}
 
 \begin{proof}
-Let us consider a duplicate detection problem of a stream $E$ over a sliding window $W$. We first devise a hash function, whose fingerprints are $2 \log_2 W$ bits long.
+	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
+The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ values $h(e_i)$ can be computed before having a collision, i.e., two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ which have the same hash, i.e. $h(e_i) = h(e_j)$.
 
-The birthday paradox, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $H$ over $a$ bits, one must, on average, collect $2^{a/2}$ hashes of different messages before obtaining a collision. Hence, in our case, we can store $2^{2 \log_2 W / 2} = W$ fingerprints of different elements before having a collision, i.e., two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ which have the same hash, i.e. $H(e_i) = H(e_j)$.
+Let $\mathcal F$ be the following filter: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
-Hence, one can construct a filter $\mathcal F$ which consists in a queue of $W$ hashes: for each new element $e$, \textsf{Detect}(e) returns \DUPLICATE if $H(e)$ is present in the queue, \UNSEEN otherwise. \textsf{Insert}(e) just adds $H(e)$ to the queue before popping the list. There is no false negative, and a false positive only happens if two elements have the same hash, which does not happen often, hence a low FPR and a null FNR.
-
-The queue stores $W$ hashes, and as such requires $W \cdot 2\log_2 W$ bits of memory.
+There is no false negative, and a false positive only happens if two elements have the same hash, which does not happen often, hence a low FPR and a zero FNR.
+The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
 
 One can also observe that the lookup algorithm on this structure is trivially parallelizable, with a very low error rate, hence having an efficient and near optimal solution.
