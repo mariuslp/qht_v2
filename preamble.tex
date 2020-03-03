@@ -1,42 +1,29 @@
 \documentclass[sigconf]{acmart}
 
-\usepackage{xspace}
 \usepackage{centernot}
-\usepackage{amsmath}
+\usepackage{mathtools,amsfonts}
 
-\newcommand{\FPR}{\textsf{FPR}\xspace}
-\newcommand{\FNR}{\textsf{FNR}}
-\newcommand{\DUPLICATE}{\textsf{DUPLICATE}\xspace}
-\newcommand{\UNSEEN}{\textsf{UNSEEN}\xspace}
-\newcommand{\todo}[1][]{{\color{red}{TODO: #1}}}
+\usepackage{xspace}
+\newcommand*{\FPR}{\textsf{FPR}\xspace}
+\newcommand*{\FNR}{\textsf{FNR}}
+\newcommand*{\DUPLICATE}{\textsf{DUPLICATE}\xspace}
+\newcommand*{\UNSEEN}{\textsf{UNSEEN}\xspace}
+\newcommand*{\todo}[1][]{{\color{red}{TODO: #1}}}
 
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
- 
-%\copyrightyear{2018}
-%\acmYear{2018}
-%\setcopyright{acmlicensed}
-%\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
-%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection, June 03--05, 2018, Woodstock, NY}
-%\acmPrice{15.00}
-%\acmDOI{10.1145/1122445.1122456}
-%\acmISBN{978-1-4503-9999-9/18/06}
+%\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
-%
-% These commands are for a JOURNAL article.
-%\setcopyright{acmcopyright}
-%\acmJournal{TOG}
-%\acmYear{2018}\acmVolume{37}\acmNumber{4}\acmArticle{111}\acmMonth{8}
-%\acmDOI{10.1145/1122445.1122456}
 
-%
-% Submission ID. 
-% Use this when submitting an article to a sponsored event. You'll receive a unique submission ID from the organizers
-% of the event, and this ID should be used as the parameter to this command.
-%\acmSubmissionID{123-A56-BU3}
+\usepackage{varioref}
+\usepackage{cleveref}
 
-%
-% The majority of ACM publications use numbered citations and references. If you are preparing content for an event
-% sponsored by ACM SIGGRAPH, you must use the "author year" style of citations and references. Uncommenting
-% the next command will enable that style.
-%\citestyle{acmauthoryear}
+\usepackage{xcolor}
+\hypersetup{
+	linktoc = page,
+	pdfpagemode = UseNone,
+	colorlinks,
+	linkcolor={red!50!black},
+	citecolor={blue!50!black},
+	urlcolor={blue!80!black}
+}
 
+\pagestyle{plain}
