@@ -136,7 +136,7 @@ We therefore introduce new definitions suited to that setting:
 
 \begin{proof}
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
-The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
+The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
