@@ -1,71 +1,20 @@
-\documentclass[sigconf]{acmart}
-
-\usepackage{xspace}
-\usepackage{centernot}
-\usepackage{amsmath}
-
-\newcommand{\FPR}{\textsf{FPR}\xspace}
-\newcommand{\FNR}{\textsf{FNR}}
-\newcommand{\DUPLICATE}{\textsf{DUPLICATE}\xspace}
-\newcommand{\UNSEEN}{\textsf{UNSEEN}\xspace}
-\newcommand{\todo}[1][]{{\color{red}{TODO: #1}}}
-
-\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
- 
-%\copyrightyear{2018}
-%\acmYear{2018}
-%\setcopyright{acmlicensed}
-%\acmConference[Woodstock '18]{Woodstock '18: ACM Symposium on Neural Gaze Detection}{June 03--05, 2018}{Woodstock, NY}
-%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection, June 03--05, 2018, Woodstock, NY}
-%\acmPrice{15.00}
-%\acmDOI{10.1145/1122445.1122456}
-%\acmISBN{978-1-4503-9999-9/18/06}
-
-%
-% These commands are for a JOURNAL article.
-%\setcopyright{acmcopyright}
-%\acmJournal{TOG}
-%\acmYear{2018}\acmVolume{37}\acmNumber{4}\acmArticle{111}\acmMonth{8}
-%\acmDOI{10.1145/1122445.1122456}
-
-%
-% Submission ID. 
-% Use this when submitting an article to a sponsored event. You'll receive a unique submission ID from the organizers
-% of the event, and this ID should be used as the parameter to this command.
-%\acmSubmissionID{123-A56-BU3}
-
-%
-% The majority of ACM publications use numbered citations and references. If you are preparing content for an event
-% sponsored by ACM SIGGRAPH, you must use the "author year" style of citations and references. Uncommenting
-% the next command will enable that style.
-%\citestyle{acmauthoryear}
-
+\input{preamble.tex}
 
 \begin{document}
 
-
 \title{Adapting Duplicate Filters to a Sliding Window Context}
 
-%
-% The "author" command and its associated commands are used to define the authors and their affiliations.
-% Of note is the shared affiliation of the first two authors, and the "authornote" and "authornotemark" commands
-% used to denote shared contribution to the research.
-\author{R\'emi G\'eraud-Stewart}
+\author{Rémi Géraud-Stewart}
 \affiliation{%
-  \institution{D\'epartement d'informatique de l'ENS, \'Ecole normale sup\'erieure, CNRS, PSL Research University}
+  \institution{Département d'informatique de l'ENS, école normale supérieure, CNRS, PSL Research University}
   \city{Paris}
   \state{France}
-}
-\affiliation{%
-	\institution{Ingenico Labs Advanced Research}
-	\city{Paris}
-	\state{France}
 }
 \email{remi.geraud@ens.fr}
 
 \author{Marius Lombard-Platet}
 \affiliation{%
-  \institution{D\'epartement d'informatique de l'ENS, \'Ecole normale sup\'erieure, CNRS, PSL Research University}
+  \institution{Département d'informatique de l'ENS, école normale supérieure, CNRS, PSL Research University}
   \city{Paris}
   \country{France}
 }
@@ -78,22 +27,11 @@
 
 \author{David Naccache}
 \affiliation{%
-  \institution{D\'epartement d'informatique de l'ENS, \'Ecole normale sup\'erieure, CNRS, PSL Research University}
+  \institution{Département d'informatique de l'ENS, école normale supérieure, CNRS, PSL Research University}
   \city{Paris}
   \country{France}
 }
-\affiliation{%
-	\institution{Ingenico Labs Advanced Research}
-	\city{Paris}
-	\state{France}
-}
 \email{david.naccache@ens.fr}
-
-%
-% By default, the full list of authors will be used in the page headers. Often, this list is too long, and will overlap
-% other information printed in the page headers. This command allows the author to define a more concise list
-% of authors' names for this purpose.
-%\renewcommand{\shortauthors}{G\'eraud-Stewart et al.}
 
 \begin{abstract}
 We introduce a generic framework for adapting duplicate filters for sliding windows. Most papers on the literature focus on the fact that a filter must detect a duplicate on the whole stream. In this paper, we recall from previous work that this problem is ill-defined, and that
