@@ -81,7 +81,7 @@ Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly 
 Let $E = \{e_i\}$ be a stream over $\Gamma$. Some element $e_j \in E$ is called a \emph{duplicate} if and only if there exists $i < j$ such that $e_i = e_j$. In that case we write $e_j \in^2 E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notin^2 E$.
 \end{definition}
 
-\begin{definition}[Duplace detection filter]
+\begin{definition}[Duplicate detection filter]
 	A \emph{duplicate detection filter} (DDF) is a collection of two algorithms 
 	$\mathcal F = (\mathcal S, \mathsf{Insert}, \mathsf{Detect})$ of a state $\mathcal S \in \mathcal M$\footnote{Here, $\mathcal M$ denotes all the memory states that can be reached by the filter.} and two algorithms,
 	\begin{itemize}
@@ -102,9 +102,9 @@ We will usually consider the situations where the available memory is too small 
 \end{definition}
 
 \subsection{Filter Saturation and Sliding Windows}
-Unfortunately, duplicate detection over an infinite stream has the following effect. Since a filter can only store at most one element per bit \cite[Section 2.1]{10.1145/3297280.3297335}, a filter of size $M$ can information-theoretically remember at most $M$ elements. Thus after $fM$ insertions (with $f \gg 1$), at most a small fraction $1/f \ll 1$ of the stream can be stored, we say that the filter is \emph{saturated}. 
+Unfortunately, duplicate detection over an infinite stream has the following effect. Since a DDF can only store at most one element per bit \cite[Section 2.1]{10.1145/3297280.3297335}, a DDF of size $M$ can information-theoretically remember at most $M$ elements. Thus after $fM$ insertions (with $f \gg 1$), at most a small fraction $1/f \ll 1$ of the stream can be stored, we say that the DDF is \emph{saturated}. 
 
-In other terms, any filter is asymptotically as good as a random guess:
+In other terms, any DDF is asymptotically as good as a random guess:
 	\begin{theorem}[\cite{10.1145/3297280.3297335}]\label{thm:sat_u}
 	Let $\FNR_\infty$ and $\FPR_\infty$ be the asymptotic false negative and false positive rates of a filter of $M$ bits of memory (i.e. the FNR and FPR on a stream of size going to infinity).
 	
@@ -119,15 +119,15 @@ We therefore introduce new definitions suited to that setting:
 	Let $E = \{e_i\}$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \in_w^2 E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notin_w^2 E$.
 \end{definition}
 \begin{definition}[False positive, false negative over a sliding window]
-	Let $w \in \mathbb N$, $e \notin_w^2 E$ (resp. $e \in_w^2 E$) and let $\mathcal F$ be a filter. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
+	Let $w \in \mathbb N$, $e \notin_w^2 E$ (resp. $e \in_w^2 E$) and let $\mathcal F$ be a DDF. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
 \end{definition}
 
 \begin{definition}[False positive rate, false negative rate over a sliding window]
-	Let $E$ be a stream, $\mathcal F$ be a filter, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
+	Let $E$ be a stream, $\mathcal F$ be a DDF, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
 \end{definition}
 
 \subsection{Bounds on the Sliding Window DDP}
-
+\todo[R.: je pense qu'on peut donner la probabilité exacte sans beaucoup plus d'effort]
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 \end{theorem}
@@ -136,15 +136,14 @@ We therefore introduce new definitions suited to that setting:
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
 The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ values $h(e_i)$ can be computed before having a collision, i.e., two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ which have the same hash, i.e. $h(e_i) = h(e_j)$.
 
-Let $\mathcal F$ be the following filter: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
+Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
 There is no false negative, and a false positive only happens if two elements have the same hash, which does not happen often, hence a low FPR and a zero FNR.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
+When $|\Gamma| > 2 \log_2 w$ this DDF outperforms the naive strategy, both in terms of time and memory. Whether it is possible to bring the value of $M$ below $O(w \log_2 w)$ is an open problem. 
 
-One can also observe that the lookup algorithm on this structure is trivially parallelizable, with a very low error rate, hence having an efficient and near optimal solution.
-
-As such, the problem remains open for cases where $M \ll W \log_2 W$.
+Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
 \section{Unsuitability of Most Filters for Duplicate Detection over a Sliding Window}
 While the duplicate detection problem over a sliding window is only but a slight reformulation of the original problem of duplicate detection, it turns out that most streaming filters which perform well in the latter problem are not as performant in the former.
