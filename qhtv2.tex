@@ -131,16 +131,16 @@ We therefore introduce new definitions suited to that setting:
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 	
-	More precisely, it is possible to create a filter with a FNR of $0$, and a FPR of $\frac{1}{w}$.
+	More precisely, it is possible to create a filter with a FNR of $0$, and a FPR of $1 - (1-\frac1{w^2})^w \sim \frac 1w$.
 \end{theorem}
 
 \begin{proof}
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
-The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{2 \log_2 w / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
+The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
-There is no false negative, and a false positive only happens if the new element to be inserted collides with another element, which happens with probability $\frac 12\frac{2}{w}$, hence an FNR of $0$ and a FPR of $\frac{1}{w}$.
+There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FNR of $0$ and a FPR of $1 - (1-\frac1{w^2})^w$.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
 
@@ -148,7 +148,7 @@ When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) thi
 
 Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
-Another remark is that when $M \approx w\log_2w$, it may be possible to solve the problem almost optimally in terms of error rate, the proposed solution remains very slow, requiring $O(W)$ computation time (although this complexity can be parallelized). Hence, it remains an open question of how to quickly detect duplicates in this context.
+Another remark is that when $M \approx w\log_2w$, it may be possible to solve the problem almost optimally in terms of error rate, the proposed solution remains very slow, requiring $O(w)$ computation time (although this complexity can be parallelized). Hence, it remains an open question of how to quickly detect duplicates in this context.
 
 \subsection{DDP vs Sliding Window DDP}
 The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. As such, only QHTs will be discussed.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
