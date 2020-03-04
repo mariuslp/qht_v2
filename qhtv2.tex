@@ -54,7 +54,7 @@
 \subsection{Motivation}
 
 \paragraph{Duplicate detection problem.}
-We consider the following problem (duplicate detection problem, DPP): given a stream $E_n = \{e_1, e_2, \dotsc, E_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
+We consider the following problem (duplicate detection problem, DPP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
 
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
@@ -131,12 +131,12 @@ We therefore introduce new definitions suited to that setting:
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 	
-	More precisely, it is possible to create a filter with a FNR of $0$, and a FPR of $1 - (1-\frac1{w^2})^w \sim \frac 1w$.
+	More precisely, it is possible to create a filter of $M$ bits with an FNR of $0$, and an FPR of $1 - (1-\frac1{w^2})^w \sim \frac 1w$.
 \end{theorem}
 
 \begin{proof}
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
-The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$).
+The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$). The 50\% threshold we impose on $h$ is arbitrary but nonetheless practical.
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the list. 
 
@@ -144,7 +144,7 @@ There is no false negative, and a false positive only happens if the new element
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
 
-When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naive strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w |\Gamma|$ bits of memory.}, both in terms of time and memory. Whether it is possible to bring the value of $M$ below $O(w \log_2 w)$ is an open problem. 
+When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naive strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w |\Gamma|$ bits of memory.}, both in terms of time and memory.
 
 Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
