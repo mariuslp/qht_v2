@@ -101,6 +101,14 @@ We will usually consider the situations where the available memory is too small 
 	Let $E$ be a stream, $\mathcal F$ be a filter. The \emph{false positive rate} (resp. \emph{false negative rate}) of $\mathcal F$ over the first $i < n$ elements, denoted $\FPR_i$ (resp. $\FNR_i$), is defined as the ratio of false positives divided over the number of unseen elements in $\{e_1, \dotsc, e_i\}\subset E$ (resp. the ratio of false negative divided by the number of duplicate elements in that subset).
 \end{definition}
 
+However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^*$ is a false positive (resp. false negative). 
+
+\begin{definition}[Probability of false positive, of false negative]
+	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the proabability that $e_{i+1}$ is a false positive (resp. false negative).
+\end{definition}
+
+One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^m \FP_i$, and similarly for $\FNR_n$.
+
 \subsection{Filter Saturation and Sliding Windows}
 Unfortunately, duplicate detection over an infinite stream has been identified as an ill-posed problem. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
 
@@ -110,14 +118,19 @@ In other terms, any DDF is asymptotically as good as a random guess:
 	
 	If $|\Gamma| \gg M$, then $\FNR_\infty + \FPR_\infty = 1$, which characterises random filters (i.e. filters answering randomly to any query).
 \end{theorem}
+
 One way out of this situation is to lower our expectations and work on a sliding window:
+
 \begin{definition}[Sliding window DDP]
 	Given a stream $E_n$ of fixed size $w$, with $E_n = \{e_{n-w+1}, \dotsc, e_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$.
 \end{definition} 
+
 We therefore introduce new definitions suited to that setting:
+
 \begin{definition}[Duplicate element, unseen element over a sliding window]
 	Let $E = \{e_1, e_2, \dotsc\}$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \wdup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notwdup E$.
 \end{definition}
+
 \begin{definition}[False positive, false negative over a sliding window]
 	Let $w \in \mathbb N$, $e \notwdup E$ (resp. $e \wdup E$) and let $\mathcal F$ be a DDF. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
 \end{definition}
@@ -125,6 +138,7 @@ We therefore introduce new definitions suited to that setting:
 \begin{definition}[False positive rate, false negative rate over a sliding window]
 	Let $E$ be a stream, $\mathcal F$ be a DDF, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
 \end{definition}
+
 
 \subsection{Bounds on the Sliding Window DDP}
 
@@ -161,10 +175,142 @@ Of these, only the b\_DBF was defined in the context of a sliding window. The ot
 
 
 \section{Queuing Filters for Sliding Window Adaptation}
+In this section, we propose a way of adapting filters to a sliding window context. We first give the description of the setup, before studying the theoretical error rates.
 
-\section{Application on QHT}
+\subsection{Queueing Filter}
+Let $\mathcal F$ be a streaming filter, not designed to work on a sliding window. Our idea is, instead of spawning a filter $\mathcal F$ using as much memory as possible, to create $L$ small versions of $\mathcal F$, which all have a limited timespan and can store up to $c$ elements. These small filters are organised in a queue, in chronological order, the oldest filters being at the end of the queue. When the oldest filter reaches saturation, it is deleted, and a new small filter is instantiated, and placed at the beginning of the queue.
 
-\section{Optimal Error rate on a Filter}
+Since the goal is to remember all elements from a sliding window of size $w$, we have the relation $Lc \approx w$. The relation is only an approximation since it may be difficult, depending on the underlying subfilter, to ensure the equality. A scheme describing our structure is detailed in \Cref{fig:scheme}.
+
+\begin{figure}
+	\begin{tikzpicture}[scale=0.4]
+	
+	% F_0 under construction
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (1, 0) rectangle (2, 1);
+	\draw (0, 0) rectangle (2, 1) node[midway] {$\mathcal F_0$};
+
+	
+	% Other subfilters
+	\draw[pattern=north west lines, pattern color=gray] (3, 0) rectangle (5, 1) node[midway] {$\mathcal F_1$};
+	\draw[pattern=north west lines, pattern color=gray] (6, 0) rectangle (8, 1) node[midway] {$\mathcal F_2$};
+	\node at (9.5, 0.5) {...};
+	\draw[pattern=north west lines, pattern color=gray] (11, 0) rectangle (13, 1) node[midway] {$\mathcal F_{L-1}$};
+	
+	% old subfilters
+	\draw[dashed] (14, 0) rectangle (16, 1) node[midway] {$\mathcal F_{L}$};
+	\draw[dashed] (17, 0) rectangle (19, 1) node[midway] {$\mathcal F_{L+1}$};
+	
+	% arrows
+	\draw [<->,>=latex] (6, 1.5) -- (8, 1.5) node[above, midway] {$c$ elements};
+	\draw [<->,>=latex] (0, -3) -- (13, -3) node[below, midway] {$Lc \approx w$ elements};
+	\draw [<->,>=latex] (1, 3) -- (15, 3) node[above, midway] {Current sliding window (of size $w$)};
+	
+	
+	%queueing filter
+	\draw (-0.5, 2.5) rectangle (13.5, -2.5) node[anchor=south east] {Queuing filter};
+	
+	% legend
+	\draw[draw=none, pattern=north west lines, pattern color=gray] (0.5, -5) rectangle (1, -5.5);
+	\draw (0, -5) rectangle (1, -5.5) node[midway] {\tiny $\mathcal F$};
+	\draw (1.25, -5.25) node[anchor=west] {\tiny Subfilter being populated};
+	
+	\draw[pattern=north west lines, pattern color=gray] (7, -5) rectangle (8, -5.5) node[midway] {\tiny $\mathcal F_i$};
+	\draw (8.25, -5.25) node[anchor=west] {\tiny Populated active subfilter};
+	
+	\draw[dashed] (14, -5) rectangle (15, -5.5) node[midway] {\tiny $\mathcal F_j$};
+	\draw (1 5.25, -5.25) node[anchor=west] {\tiny Expired subfilter};
+	\end{tikzpicture}
+	\caption{Architecture of the queuing filter. The filter is composed of $L$ subfilters $\mathcal F$, each containing up to $c$ elements. Once all subfilters are full with $c$ elements each, the oldest one is expired. As such, it is dropped and a new one is created and put under population at the beginning of the queue.}\label{fig:scheme}
+\end{figure}
+
+In the rest of this paper, we refer to the small filters constituting the queuing filter as \emph{subfilters}.
+
+When the user wants to lookup for an element, they query all subfilters. If any subfilter answers with \DUPLICATE, the queueing filter answers \DUPLICATE. Otherwise, it answers \UNSEEN. Insertion is a simple insertion in the topmost subfilter.
+
+After $c$ insertions (where $c$ is a filter parameter), the last filter of the queue is removed, and a new (empty) filter is appended in front of the queue. We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \Cref{alg:queueing}.
+
+For the sake of simplicity in the pseudocode, we assume that the subfilter $\mathcal F$ has a function \textsf{Setup} which takes as input the available memory $m$, and returns an initialized empty filter $\mathcal F$ of size at most $m$..
+
+\begin{algorithm}[]
+	\caption{Queueing Filter Setup, Lookup and Insert}\label{alg:queueing}
+	
+	\begin{algorithmic}[1]
+	\Function{Setup}{$\mathcal F, M, L, c$}
+		\Comment $M$ is the available memory, $\mathcal F$ the subfilter structure, $L$ the number of subfilters and $c$ the number of insertions per subfilter
+		\State Queue\_storage $\gets$ empty queue
+		\State Counter $\gets 0$
+		\For{$i$ from $0$ to $L-1$}
+			\State Queue\_storage[i] $\gets$ $\mathcal F.\mathsf{Setup}(\lfloor M/L \rfloor)$
+		\EndFor
+		Counter $\gets$ 0
+		\State Store $c$, $M$, $L$, $\mathcal F$
+		
+		\State \Return filter
+	\EndFunction 
+	\item[]
+	\end{algorithmic}
+
+	\begin{algorithmic}[1]
+	\Function{Lookup}{$e$}
+		\For{$i$ from $0$ to $L-1$}
+			\If{$\mathcal F_i.\mathsf{Lookup(e)}$}
+				\State \Return $\DUPLICATE$
+			\EndIf
+		\EndFor
+		\State \Return \UNSEEN
+	\EndFunction
+	\item[]
+	\end{algorithmic}
+
+	\begin{algorithmic}[1]
+	\Function{Insert}{$e$}
+		\State $\mathcal F_0.\mathsf{Insert}(e)$
+		\State Counter++
+		\If{Counter == $c$}
+			\State Pop last element of Queue\_Storage
+			\State Insert $\mathcal F$.\textsf{Setup}($\lfloor M/L \rfloor$) at the beginning of Queue\_Storage
+		\EndIf
+	\EndFunction
+	\end{algorithmic}
+\end{algorithm}
+
+\subsection{Error Rate Analysis}
+Depending on the underlying subfilter, the queueing filter will behave differently. However, its false positive and false negative probabilities can be derived from the underlying subfilter's false positive and false negative probabilities. 
+
+\subsubsection{Number of Elements in a Queueing Filter}\label{subsub:number_elements}
+Before deriving the error rates, it is important to analyse how many elements are in the filter. We know, by design, that no more than $cL$ elements can be present. However, after exactly $cL$ insertions, the last subfilter is deleted, to be replaced by an empty one at the beginning of the queue. Hence, after $cL$ insertions, only $c(L-1)$ elements are stored in the queueing filter.
+
+Hence, the number of elements in the filter oscillate between $c(L-1)$ and $cL$. Furthermore, we have $cL \approx w$, which means that the number of elements in the filter can be higher than $w$. These facts must be kept in mind while deriving the error rates.
+
+\subsubsection{Probability of False Positive}
+\begin{theorem}
+	Let $\mathcal Q$ be a queueing filter, consisting of $L$ underlying subfilters $\mathcal F$, each filled with up to $c$ elements. Let $\FP_{\mathcal F,m}$ be the probability of false positive of the subfilter $\mathcal F$ after $m$ insertions, let $\FP_{\mathcal Q, m}^w$ be the probability of false positive of $\mathcal Q$ after $m$ insertions on a sliding window of size $w$.
+	
+	We have $$\FP_{\mathcal Q, m}^w = 1 - (1 - \FP_{\mathcal F,c})^{L-1}(1 - \FP_{\mathcal F, m \% cL })$$ where \% is the modulo operator.
+\end{theorem}
+
+\begin{proof}
+	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^* \notwdup E$. We first take into account the remark in \Cref{subsub:number_elements} that the filter $\mathcal Q$ may contain more than $w$ elements, and hence potentially contain $e$ in memory, in the last subfilter of the queue. However, such event is quite rare, and can be neglected: let $\delta = cL - w$ the number of additional elements that can be stored in $\mathcal Q$. The probability that $e^*$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta \approx \frac{\delta}{|\Gamma|} \approx 0$ since $\delta$ is likely to be small, while $|\Gamma|$ is too big for being stored in memory.
+	
+	Hence, we can neglect the probability that $e^*$ is present in the filter. Therefore, $e^*$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^*)}$ return \DUPLICATE. Conversely, $e^*$ is not a false positive if and only if all subqueries $\mathcal F_i.\mathsf{Lookup(e^*)}$ return \UNSEEN. This can be rewritten as $e^*$ is not a false positive if and only if $e^*$ is not a false positive for each subfilter.
+	
+	Given that each subfilter stores $c$ elements, safe for the first subfilter which only stores $m \% cL$ elements, we get
+	$$\FP_{\mathcal Q, m}^w = 1 - (1 - \FP_{\mathcal F, m \% cL })(1 - \FP_{\mathcal F,c})^{L-1}$$
+\end{proof}
+
+\subsubsection{False Negative Rate}
+\begin{theorem}
+	
+\end{theorem}
+
+\section{Application on Existing Filters}
+
+
+\subsection{Optimal Error rate on a Subfilter}
+
+\subsection{Filter Comparison}
+
+\subsection{Application on QHT}
 
 \section{Experiments and Benchmarks}
 

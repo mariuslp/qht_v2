@@ -4,8 +4,10 @@
 \usepackage{cancel}
 
 \usepackage{xspace}
-\newcommand*{\FPR}{\textsf{FPR}\xspace}
-\newcommand*{\FNR}{\textsf{FNR}}
+\newcommand*{\FN}{\operatorname{FN}}
+\newcommand*{\FP}{\operatorname{FP}}
+\newcommand*{\FPR}{\operatorname{FPR}}
+\newcommand*{\FNR}{\operatorname{FNR}}
 \newcommand*{\DUPLICATE}{\textsf{DUPLICATE}\xspace}
 \newcommand*{\UNSEEN}{\textsf{UNSEEN}\xspace}
 \newcommand*{\todo}[1][]{{\color{red}{TODO: #1}}}
@@ -14,7 +16,12 @@
 \newcommand*{\wdup}{\in_w^2}
 \newcommand*{\notwdup}{\, \cancel{\in_w^2}\,}
 
+\usepackage{tikz}
+\usetikzlibrary{patterns}
+\usepackage[outline]{contour}
 
+\usepackage[ruled]{algorithm}
+\usepackage[noend]{algpseudocode}
 %\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
 
 
