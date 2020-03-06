@@ -31,10 +31,12 @@
 
 %% Abstract
 \begin{abstract}
-	A duplicate filter is a data structure designed to efficiently detect repetitions (duplicates) in a stream. A well-known instance of such a data structure is the Bloom filter, which has been generalised in several ways.
+	A duplicate filter is a data structure designed to efficiently detect repetitions (duplicates) in a stream, when only a limited amount of memory is available. A well-known data structure used in this contexte is the Bloom filter, which has been generalised in several ways to 
+	improve its performances or strike specific tradeoffs. 
+	
+	When analysed in the limit of an infinite stream, error rates of duplicate filters turn out to be heavily constrained; as a consequence they appear to provide no advantage, asymptotically, over a random yes-no coin toss \cite{10.1145/3297280.3297335}.
 
-	In this paper we introduce a generic framework that adapts duplicate filters to sliding windows, rather than on an infinite stream. Indeed, although the
-	infinite stream setting is known to be ill-defined, many duplicate filters are only described in such a scenario. This enables a rigourous mathematical study of such filters.
+	In this paper we introduce a generic framework that adapts duplicate filters to the better-behaved context of a sliding window. We show that several duplicate filters can be adapted to this context and provide a rigourous mathematical study of such constructions.
 \end{abstract}
 
 %% CCS XML
@@ -54,15 +56,17 @@
 \subsection{Motivation}
 
 \paragraph{Duplicate detection problem.}
-We consider the following problem (duplicate detection problem, DPP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
+We consider the following problem (duplicate detection problem, DDP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
 
-Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
+Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
 
 \paragraph{Fuzzy and approximate DPP}
-A quite popular research topic on the subject of duplicate detection is \emph{fuzzy} detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact ame element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates over an alphabet of $U$ letters requires $U$ bits of memory, thus being impracticable in many cases.
+A popular approach for the DDP is \emph{fuzzy} detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. 
+{\color{blue} R.: tu veux dire un mot sur ce que c'est?}
+This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact same element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical.
 
-As it turns out, approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
+Approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
 
 \todo[continuer].
 
@@ -101,7 +105,7 @@ We will usually consider the situations where the available memory is too small 
 	Let $E$ be a stream, $\mathcal F$ be a filter. The \emph{false positive rate} (resp. \emph{false negative rate}) of $\mathcal F$ over the first $i < n$ elements, denoted $\FPR_i$ (resp. $\FNR_i$), is defined as the ratio of false positives divided over the number of unseen elements in $\{e_1, \dotsc, e_i\}\subset E$ (resp. the ratio of false negative divided by the number of duplicate elements in that subset).
 \end{definition}
 
-However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^*$ is a false positive (resp. false negative). 
+However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^\star$ is a false positive (resp. false negative). 
 
 \begin{definition}[Probability of false positive, of false negative]
 	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the proabability that $e_{i+1}$ is a false positive (resp. false negative).
@@ -162,20 +166,20 @@ When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) thi
 
 Note that unlike the DDP, we do not necessarily encounter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime. 
 
-Another remark is that when $M \approx w\log_2w$, it may be possible to solve the problem almost optimally in terms of error rate, the proposed solution remains very slow, requiring $O(w)$ computation time (although this complexity can be parallelized). Hence, it remains an open question of how to quickly detect duplicates in this context.
+Another remark is that when $M \approx w\log_2w$, the error rate is minimal but $O(w)$ operations ares required (although this complexity may be reduced using parallelized implementations). Detect duplicates faster in this context remains an open question.
 
 \subsection{DDP vs Sliding Window DDP}
 The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. As such, only QHTs will be discussed.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
 
 \todo[Regarder https://www2005.org/cdrom/docs/p12.pdf]
 
-Of these, only the b\_DBF was defined in the context of a sliding window. The others do not account for a finite-length sliding window, and cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
+Of these, only the b\_DBF was defined in the context of a sliding window. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
 \todo[Expliquer ?]
 
 
 \section{Queuing Filters for Sliding Window Adaptation}
-In this section, we propose a way of adapting filters to a sliding window context. We first give the description of the setup, before studying the theoretical error rates.
+In this section, we describe how to turn DDF into sliding window DDFs. We first give the description of the setup, before studying the theoretical error rates.
 
 \subsection{Queueing Filter}
 Let $\mathcal F$ be a streaming filter, not designed to work on a sliding window. Our idea is, instead of spawning a filter $\mathcal F$ using as much memory as possible, to create $L$ small versions of $\mathcal F$, which all have a limited timespan and can store up to $c$ elements. These small filters are organised in a queue, in chronological order, the oldest filters being at the end of the queue. When the oldest filter reaches saturation, it is deleted, and a new small filter is instantiated, and placed at the beginning of the queue.
