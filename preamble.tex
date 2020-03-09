@@ -1,4 +1,5 @@
 \documentclass[sigconf]{acmart}
+\usepackage[utf8]{inputenc}
 
 \usepackage{mathtools,amsfonts}
 \usepackage{csquotes}
@@ -17,17 +18,29 @@
 \newcommand*{\notdup}{\mathrel{\cancel{\in^2}}}
 \newcommand*{\notwdup}{\mathrel{\cancel{\in_w^2}}}
 
+% Drawings
 \usepackage{tikz}
 \usetikzlibrary{patterns}
-\usepackage[outline]{contour}
+
+% Plots
+\usepackage{pgfplots}
+\usepgfplotslibrary{groupplots}
+\usepgfplotslibrary{fillbetween}
+\tikzset{mynode/.style={circle,draw,font=\small,minimum width=1cm,font=\sffamily}}
+\pgfdeclarepatternformonly{north east lines wide}%
+{\pgfqpoint{-1pt}{-1pt}}%
+{\pgfqpoint{10pt}{10pt}}%
+{\pgfqpoint{6pt}{6pt}}%
+{
+	\pgfsetlinewidth{0.1pt}
+	\pgfpathmoveto{\pgfqpoint{0pt}{0pt}}
+	\pgfpathlineto{\pgfqpoint{6.1pt}{6.1pt}}
+	\pgfusepath{stroke}
+}
 
 \usepackage[ruled]{algorithm}
 \usepackage[noend]{algpseudocode}
 %\def\BibTeX{{\rm B\kern-.05em{\sc i\kern-.025em b}\kern-.08emT\kern-.1667em\lower.7ex\hbox{E}\kern-.125emX}}
-
-
-\usepackage{varioref}
-\usepackage{cleveref}
 
 \usepackage{xcolor}
 \hypersetup{
@@ -40,3 +53,6 @@
 }
 
 \pagestyle{plain}
+
+\usepackage{varioref}
+%\usepackage{cleveref}
