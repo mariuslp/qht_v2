@@ -56,7 +56,7 @@
 \subsection{Motivation}
 
 \paragraph{Duplicate detection problem.}
-We consider the following problem (duplicate detection problem, DDP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error $\epsilon$, \todo[A verifier using polynomially many resources (time and memory) in $1/\epsilon$].
+We consider the following problem (duplicate detection problem, DDP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$, using only $M$ bits of memory. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error.
 
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
@@ -64,7 +64,7 @@ Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may 
 \paragraph{Fuzzy and approximate DPP}
 A popular approach for the DDP is \emph{fuzzy} detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. Fuzzy detection deals with detecting \emph{fuzzy} duplicates (i.e., detecting if two elements are similar), which can be useful in several context, such as text processing.
 
-This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact same element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical.
+This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact same element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. As a matter of fact, in the context of approximate DDT, it is assumed that $M$ is to small for classical naïve solutions. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical.
 
 Approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
 
@@ -109,13 +109,13 @@ We will usually consider the situations where the available memory is too small 
 However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^\star$ is a false positive (resp. false negative). 
 
 \begin{definition}[Probability of false positive, of false negative]
-	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the proabability that $e_{i+1}$ is a false positive (resp. false negative).
+	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
 \end{definition}
 
 One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^m \FP_i$, and similarly for $\FNR_n$.
 
 \subsection{Filter Saturation and Sliding Windows}
-Unfortunately, duplicate detection over an infinite stream has been identified as an ill-posed problem. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
+Unfortunately, efficient duplicate detection over an infinite stream has been identified as an unsolvable problem \cite{10.1145/3297280.3297335}. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
 
 In other terms, any DDF is asymptotically as good as a random guess:
 	\begin{theorem}[\cite{10.1145/3297280.3297335}]\label{thm:sat_u}
@@ -147,6 +147,31 @@ We therefore introduce new definitions suited to that setting:
 
 \subsection{Bounds on the Sliding Window DDP}
 
+Our goal is to minimise both the false positive and false negative rates of a DDF, given a fixed and limited amount of memory. Before going into details, we first explore the limits of the problem, i.e., when perfect or very performant solutions exist.
+
+\begin{theorem}
+	For $M = w (\log_2(w) + 1) \log_2(|\Gamma|)$, the sliding window DDP can be solved with 0 errors in constant time.
+\end{theorem}
+
+\begin{proof}
+	To store $w$ elements from a sliding window, the naive idea is to use a queue $Q$ of $w$ elements. However, this yields a complexity of $O(w)$ for lookup, which might be impractical. Thus, we create a second structure for the sake of quickly answering lookup questions.
+	
+	The dictionary $D$ has the form $\Gamma \Rightarrow \mathbb N$: keys are elements from the alphabet, values are integers serving as counters.
+	
+	During insertion of $e$, $e$ is appended to the queue and $D[e]$ is incremented. If the key $e$ did not exist in $D$, it is created first.
+	
+	The insertion of an element means that another element, at the end of the sliding window, is removed. For this, we pop the last element of $Q$, and get $e_{last} \gets Q.pop()$. Then, we decrement $D[e_{last}]$ and if $D[e_{last}] = 0$, the key is deleted from $D$.
+	
+	Lookup of an element $e^\star$ is simply done by looking whether the key $D[e^\star]$ exists, which is done in constant time.
+	
+	It is immediate to see that such a structure has a 0 error rate over the sliding window and that both insertion and lookup times are constant.
+	
+	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long), hence the claim. 
+\end{proof}
+
+
+However, this implementation depends on $\log_2 |\Gamma|$, which might be arbitrarily large. We thus propose another solution, with a very low error rate but constant time.
+
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 	
@@ -163,11 +188,13 @@ There is no false negative, and a false positive only happens if the new element
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 \end{proof}
 
-When $|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naive strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w |\Gamma|$ bits of memory.}, both in terms of time and memory.
+When $\log_2|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naïve strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w \log_2|\Gamma|$ bits of memory.}, both in terms of time and memory.
 
-Note that unlike the DDP, we do not necessarily encounter filter saturation for the sliding window DDP, which makes it possible for different DDF to have different performances in the asymptotic regime and thus to be ranked. 
 
-Another remark is that when $M \approx w\log_2w$, the error rate is minimal but $O(w)$ operations ares required (although this complexity may be reduced using parallelized implementations). Detecting duplicates faster in this context remains an open question.
+Note that this solution has a time complexity of $O(w)$. Using a dictionary like in the previous proof, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, but requiring $5w\log_2 w$ bits of memory.
+
+Hence, very good solutions for situations where $M \approx 5w\log_2 w$ already exist, but efficient solutions and lower bounds on the error rates for smaller amounts of memory are still to be found.
+
 
 \subsection{DDP vs Sliding Window DDP}
 The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. We included them for the sake of completeness.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
@@ -310,9 +337,9 @@ Hence, the number of elements in the filter oscillate between $c(L-1)$ and $cL$.
 \end{theorem}
 
 \begin{proof}
-	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^* \notwdup E$. We first take into account the remark in \ref{subsub:number_elements} that the filter $\mathcal Q$ may contain more than $w$ elements, and hence potentially contain $e$ in memory, in the last subfilter of the queue. However, such event is quite rare, and can be neglected: let $\delta = cL - w$ the number of additional elements that can be stored in $\mathcal Q$. The probability that $e^*$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta \approx \frac{\delta}{|\Gamma|} \approx 0$ since $\delta$ is likely to be small, while $|\Gamma|$ is too big for being stored in memory.
+	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^\star \notwdup E$. We first take into account the remark in \ref{subsub:number_elements} that the filter $\mathcal Q$ may contain more than $w$ elements, and hence potentially contain $e$ in memory, in the last subfilter of the queue. However, such event is quite rare, and can be neglected: let $\delta = cL - w$ the number of additional elements that can be stored in $\mathcal Q$. The probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta \approx \frac{\delta}{|\Gamma|} \approx 0$ since $\delta$ is likely to be small, while $|\Gamma|$ is too big for being stored in memory.
 	
-	Hence, we can neglect the probability that $e^*$ is present in the filter. Therefore, $e^*$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^*)}$ returns \DUPLICATE. Conversely, $e^*$ is not a false positive if and only if all subqueries $\mathcal F_i.\mathsf{Lookup(e^*)}$ return \UNSEEN. This can be rewritten as $e^*$ is not a false positive if and only if $e^*$ is not a false positive for each subfilter.
+	Hence, we can neglect the probability that $e^\star$ is present in the filter. Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is not a false positive if and only if all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN. This can be rewritten as $e^\star$ is not a false positive if and only if $e^\star$ is not a false positive for each subfilter.
 	
 	Given that each subfilter stores $c$ elements, safe for the first subfilter which only stores $m \% c$ elements, we get
 	$$\FP_{\mathcal Q, m}^w = 1 - (1 - \FP_{\mathcal F, m \% c })(1 - \FP_{\mathcal F,c})^{L-1}$$
@@ -333,29 +360,28 @@ Hence, the number of elements in the filter oscillate between $c(L-1)$ and $cL$.
 \end{theorem}
 
 \begin{proof}
-	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^* \wdup E$.
-	We first observe that if $cL > w$, there might be some duplicates of $e^*$ that happened before the current sliding window, but might still be remembered by the oldest filter. However, as argued in the previous section, the probability of such an event is negligible.
+	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^\star \wdup E$.
+	We first observe that if $cL > w$, there might be some duplicates of $e^\star$ that happened before the current sliding window, but might still be remembered by the oldest filter. However, as argued in the previous section, the probability of such an event is negligible.
 	
-	Hence, we consider that the only duplicates are part of the sliding window. $e^*$ is a false negative if and only if all subfilters $\mathcal F_i$ answer $\mathcal F_i.\mathsf{Detect}(e^*) = \UNSEEN$.
+	Hence, we consider that the only duplicates are part of the sliding window. $e^\star$ is a false negative if and only if all subfilters $\mathcal F_i$ answer $\mathcal F_i.\mathsf{Detect}(e^\star) = \UNSEEN$.
 	
 	There can be two cases:
 	\begin{itemize}
-		\item $e^*$ is present in $\mathcal F_i$'s sub-sliding window 
-		\item $e^*$ is present in $\mathcal F_i$'s sub-sliding window
-
+		\item $e^\star$ is present in $\mathcal F_i$'s sub-sliding window
+		\item $e^\star$ is not present in $\mathcal F_i$'s sub-sliding window
 	\end{itemize}
 
-In the first case, $\mathcal F_i.\mathsf{Detect}(e^*)$ returns \UNSEEN if and only if $e^*$ is a false negative for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $\FN_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $\FN_{\mathcal F, m\%c}$.
+In the first case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is a false negative for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $\FN_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $\FN_{\mathcal F, m\%c}$.
 
-In the second case, $\mathcal F_i.\mathsf{Detect}(e^*)$ returns \UNSEEN if and only if $e^*$ is not a false positive for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $1-\FP_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $1-\FP_{\mathcal F, m\%c}$.
+In the second case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is not a false positive for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $1-\FP_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $1-\FP_{\mathcal F, m\%c}$.
 
-Now, the probability $p_c$ for $e^*$ to be in subfilter $\mathcal F_i$ (which has had $c$ insertions) sub-sliding window is 
+Now, the probability $p_c$ for $e^\star$ to be in subfilter $\mathcal F_i$ (which has had $c$ insertions) sub-sliding window is 
 
 \begin{align*}
-	p_c =& Pr[\text{$e^*$ is in }\mathcal F_i \text{ sub-sliding window | } e^* \wdup E]\\
-	=& \frac{Pr[\text{$e^*$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^* \wdup E]}{Pr[e^* \wdup E]}\\
-	=& \frac{Pr[\text{$e^*$ is in }\mathcal F_i \text{ sub-sliding window}]}{Pr[e^* \wdup E]}\\
-	=& \frac{1 - Pr[\text{$e^*$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - Pr[e^* \notwdup E]}\\
+	p_c =& Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
+	=& \frac{Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{Pr[e^\star \wdup E]}\\
+	=& \frac{Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{Pr[e^\star \wdup E]}\\
+	=& \frac{1 - Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - Pr[e^\star \notwdup E]}\\
 	p_c=& \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
 \end{align*}
 
@@ -376,7 +402,7 @@ This probability is quite complicated and does not allow, in the general case, f
 \begin{proof}
 As a matter of fact, on average the queueing filter consists of $L-1$ subfilters with $c$ insertions, and one subfilter with $\frac c2$ insertions. As such, we can say that the queueing filter is a representation of the last $(c-\frac12) L$ last elements. 
 
-Let us consider a duplicate $e^* \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as the theorem's proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
+Let us consider a duplicate $e^\star \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as the theorem's proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
 
 Hence, the lower $L$ is, the higher the probability of false negative will be.
 
@@ -385,19 +411,34 @@ The approximations made in this proof are backed by experimental results.
 
 
 \section{Application on Existing DDFs}
-As our queuing filter relies on another DDF subfilter, we must pick one existing DDF from the literature. However, testing all DDFs may be tedious. Instead, we propose a ranking on existing DDFs. As \cite{10.1145/3297280.3297335} mentioned, filters all reach a saturation state. The idea is then to order DDFs by their resistance to saturation --i.e., by ranking them by the time they take to reach saturation.
+As our queuing filter relies on another DDF subfilter, we must pick one existing DDF from the literature.
+\subsection{DDF Subfilter Selection Strategy}
+As a matter of fact, it is preferable to use only one kind of DDF as subfilter, as proven by the following theorem.
+
+\begin{theorem}
+	An optimal queueing filter only uses one kind of subfilter.
+\end{theorem}
+
+\begin{proof}
+	One could imagine a queueing filter in which subfilters would alternate between, say, subfilter of type $A$ and of type $B$. However, we show with a simple symmetry argument that this kind of queueing filter is sub-optimal.
+	
+	Let us consider a queueing filter relying on several kinds of subfilters. Given that all subfilters play the same role, and that their efficiency is independent of the other subfilters present, we know that one less efficient subfilter can be replaced by a more efficient one, directly improving the efficiency of the queueing filter.
+\end{proof}
+
+However, making a theoretical analysis of all DDFs error rates may be tedious. Instead, we propose a ranking on existing DDFs. As \cite{10.1145/3297280.3297335} mentioned, filters all reach a saturation state. The idea is then to order DDFs by their resistance to saturation --i.e., by ranking them by the time they take to reach saturation.
 
 Before ranking the DDFs by the error rate, we first introduce a lower bound on said rate. 
 
-Note: given we are working on selecting the best subfilter for our queueing filter. As such, in this section we are \emph{not} working on a sliding window.
+Note: given we are working on selecting the best subfilter for our queueing filter, in this section we are \emph{not} working over a sliding window.
 
-\subsection{Optimal Error Probability on a DDF}
+\subsection{Optimal Error Probability on a DDF}\label{sub:optimal_ddf}
     \begin{theorem}
 	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF of size $M$, the error probability $ER_n$ (consisting of the sum of the FP and FN probabilities) is such that
 	$$ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}$$ for any $n > M$.
 	
 	Especially, for any filter of size $M$, the asymptotic error rate $ER_\infty$ is such that $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M}$.
 \end{theorem}
+We remind that in this section, we are working on DDP over the whole stream and not over a sliding window.
 
 \begin{proof}
 	According to classical results on information theory, a perfect filter must use at least $1$ bit to remember one element from a random uniform source with no possible error.
@@ -405,21 +446,21 @@ Note: given we are working on selecting the best subfilter for our queueing filt
 	Since the filter has $M$ bits of memory, we conclude that a perfect filter can store at most $M$ elements in memory. Assume that such a filter exists. Because the stream is random, we can assume without loss of generality that the filter stores the M last elements of the stream: any other strategy cannot yield a lower error rate, given the stream is random.
 	
 	Let us derive the error rate of such a filter.
-	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter has no better option than answering randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory.
+	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter can choose to answer randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory. An optimal filter will lower the error rate of any filter using the same strategy with a different probability.
 	
-	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, the filter will return \UNSEEN with probability $1-p$. For this reason, this optimal filter has an FP probability of $p$.
+	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
 	
-	On the other hand, a duplicate element $e^* \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event "\textsf{There is at least one duplicate in the stream} and $C$ be the event \textsf{There is a duplicate of $e^*$ in the $M$ previous elements of the stream}.
+	On the other hand, a duplicate element $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event "\textsf{There is at least one duplicate in the stream} and $C$ be the event \textsf{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}.
 	
-	We have that $e^*$ triggers a false negative with probability
+	We have that $e^\star$ triggers a false negative with probability
 	
 	\begin{align*}
-	P_n &= (1 - P[C | D])(1-p) =  \left(1 - \frac{P[C \cap D]}{P[D]}\right)(1-p)\\
+	\FN_n &= (1 - P[C | D])(1-p) =  \left(1 - \frac{P[C \cap D]}{P[D]}\right)(1-p)\\
 	& = \left(1 - \frac{P[C]}{P[D]}\right)(1-p) =  \left(1 - \frac{1 - P[\bar C]}{1 - P[\bar D]}\right)(1-p) \\
-	P_n &=  \left(1 - \frac{1 - \left(1 - \frac 1U\right)^M}{1 - \left(1 - \frac 1U\right)^n}\right)(1-p)
+	\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
 	\end{align*}
 	
-	Hence, the error rate of the perfect filter is $ER_n = P_n + p =  \left(1 - \frac{1 - \left(1 - \frac{1}{U}\right)^{M}}{1 - \left(1 - \frac 1U\right)^n}\right)(1-p) + p =$ $ 1 - \frac{1-\left(1 - \frac{1}{U}\right)^{M}}{1 - \left(1 - \frac 1U\right)^n}(1-p)$, which is minimized when $p = 0$.
+	Hence, the error probability of the filter is $ER_n = \FN_n + p =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p =$ $ 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p)$, which is minimized when $p = 0$.
 	
 	Given that, by definition, a perfect filter has the lowest error rate of any filter, we get the desired result.
 	\end{proof}
@@ -442,9 +483,13 @@ Furthermore, we have the relation $cL \approx w$, so there is only one free para
 
 As such, an optimal parameter tuning would be to set $L$ so that the error rate (defined as the sum of the FPR and FNR) would be minimal. Nonetheless, given the complicated nature of the FPR and FNR formulae, deriving an optimal $L$ is out of reach.
 
-However, one can observe that a small $L$ is undesirable, as was exposed in \ref{sub:fnr}, because it would lead to a greater number of false negatives.
+We have observed in \ref{sub:fnr} that the FN is positively correlated with
+$\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated with the same value. As such, decreasing the probability of false positive leads to an increase in the probability of false negatives. 
 
-\todo[observation experimentale ?]
+However, practical tests show (see \ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.
+
+Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
+
 
 \section{Experiments and Benchmarks}
 In this section, we present the different experiments we made. The code is accessible online and will be disclosed after peer review.
@@ -472,8 +517,17 @@ The stream was a stream of uniform random elements, taken from an alphabet of $2
 	\caption{Error rate (times 100) of DDFs of 1Mb, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values}.\label{fig:graph_n}
 \end{figure}
 
+\subsection{Benchmarking Various Queuing Filters}
+In this section, we experimentally prove the heuristic used in \ref{sub:optimal_ddf}, that the best DDF operating on a full stream leads to the best queueing filter operating on a sliding window.
+
+\todo
+
+\subsection{Benchmark of the influence of $L$ parameter}\label{sub:L_bench}
+
 \subsection{Comparison of QHT and QHT-Queueing Filter}
-In this section, we compare 
+In this section, we compare the efficiency of QHT and QHT-queueing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
+
+
 
 
 \section{Security}
