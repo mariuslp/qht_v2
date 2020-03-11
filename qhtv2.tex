@@ -74,7 +74,10 @@ Approximate duplicate detection has many real-life use cases, and can sometimes 
 
 \subsection{Related Work}\label{sub:related}
 \todo[continuer]
-The idea of using subfilters, tossing old ones has already been explored in the A2 filter \cite{Yoo10}. However, the author only considered a small portion of the problem, as they only discussed about using two subfilters, and only Bloom Filters acting as subfilters. In this work, we provide a full abstraction of the mechanism, allowing us to use many other DDF than Bloom Filters. We also provide a generalised analysis of the error rates.
+In \cite{10.1145/1060745.1060753}, the authors explore the behaviour of a structure very close to the counting Bloom filter in some specific sliding window context, that they call landmark- and jumping sliding windows. However, they do not deal with the problematic of a sliding window where at each new element added to the sliding window, another element is removed.
+Closer to our work, the idea of using subfilters, tossing old ones has already been explored in the A2 filter \cite{Yoo10}. However, the author only considered a small portion of the problem, as they only discussed about using two subfilters, and only Bloom Filters acting as subfilters.
+
+In this work, we provide a full abstraction of the mechanism, allowing us to use many other DDF than Bloom Filters. We also provide a generalised analysis of the error rates.
 \subsection{Organisation}
 
 
@@ -197,11 +200,9 @@ Hence, very good solutions for situations where $M \approx 5w\log_2 w$ already e
 
 
 \subsection{DDP vs Sliding Window DDP}
-The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. We included them for the sake of completeness.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
+The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF)\footnote{QHTs stem from a correction of SQFs, and as such SQFs are less efficient than QHT in every situation \cite{10.1145/3297280.3297335}. We included them for the sake of completeness.} \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not suited to either sliding window or no sliding window DDP, as they work on what they call `landmark` sliding window, which is a zero-resetting of the memory at some user-defined epochs.
 
-\todo[Regarder https://www2005.org/cdrom/docs/p12.pdf]
-
-Of these, only the A2 and b\_DBF was defined in the context of a sliding window. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
+Of these, only the A2 and b\_DBF were designed for the sliding window DDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
 \todo[Expliquer ?]
 
@@ -523,7 +524,7 @@ In this section, we experimentally prove the heuristic used in \ref{sub:optimal_
 \todo
 
 \subsection{Benchmark of the influence of $L$ parameter}\label{sub:L_bench}
-
+In this section, we make experiments on the influence of $L$ on the error rate of the queueing filter. 
 \subsection{Comparison of QHT and QHT-Queueing Filter}
 In this section, we compare the efficiency of QHT and QHT-queueing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
 
