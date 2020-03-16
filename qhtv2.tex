@@ -31,12 +31,15 @@
 
 %% Abstract
 \begin{abstract}
-	A duplicate filter is a data structure designed to efficiently detect repetitions (duplicates) in a stream, when only a limited amount of memory is available. A well-known data structure used in this contexte is the Bloom filter, which has been generalised in several ways to 
+	A duplicate detection filter is an online data structure designed to efficiently detect repetitions (duplicates) in a stream, when only a limited amount of memory is available. A well-known data structure used in this context is the Bloom filter, which has been generalised in several ways to 
 	improve its performances or strike specific tradeoffs. 
 	
 	When analysed in the limit of an infinite stream, error rates of duplicate filters turn out to be heavily constrained; as a consequence they appear to provide no advantage, asymptotically, over a random yes-no coin toss \cite{10.1145/3297280.3297335}.
 
-	In this paper we introduce a generic framework that adapts duplicate filters to the better-behaved context of a sliding window. We show that several duplicate filters can be adapted to this context and provide a rigourous mathematical study of such constructions.
+	In this paper we consider a \enquote{windowed} variation on the duplicate detection problem
+	that is better-behaved and thus lends itself to a more thorough 
+	mathematical analysis. We show how existing filters can be adjusted to work
+	in this new setting using a queuing construction. 
 \end{abstract}
 
 %% CCS XML
@@ -55,18 +58,26 @@
 \section{Introduction}
 \subsection{Motivation}
 
-\paragraph{Duplicate detection problem.}
-We consider the following problem (duplicate detection problem, DDP): given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$, using only $M$ bits of memory. It is understood that the stream $E_n$ is updated at every time increment. An \emph{efficient} solution to this problem provides an answer with bounded error.
-
+We begin with the following, ideal problem: 
+\begin{definition}[Duplicate detection problem, DDP] Given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$.\footnote{
+	We do not consider here \emph{fuzzy} detection approaches\cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient} that study situations where $e^\star$ belongs to $E_n$ when there exists a \enquote{similar enough} element in the stream.
+}
+	At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n \cup \{e^\star\}$. 
+\end{definition}
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
-Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
 
-\paragraph{Fuzzy and approximate DPP}
-A popular approach for the DDP is \emph{fuzzy} detection \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient}. Fuzzy detection deals with detecting \emph{fuzzy} duplicates (i.e., detecting if two elements are similar), which can be useful in several context, such as text processing.
-
-This is however out of the scope of our work, as we consider an element to be a duplicate if and only if the exact same element has already appeared in the stream. \emph{Approximate} detection states that no attempt will be done to reach perfect accuracy, but rather to limit as much as possible the errors. As a matter of fact, in the context of approximate DDT, it is assumed that $M$ is to small for classical naïve solutions. One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical.
-
+In practice, additional constraints exist that we can capture with the following definition:
+\begin{definition}[DDP with bounded memory]
+	At every time step $n$, given $e^{\star}$ and a current state (dependent on history) of at most $M$ bits, solve the DDP for $E_n$ and $e^{\star}$.
+\end{definition}
+%Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
+One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical. As a result, we need a further relaxation of the DDP that allows for errors: 
+\begin{definition}[Approximate DDP with bounded memory]
+	Solve the DDP using at most $M$ bits of memory, with at most $\epsilon < 1/2$ mispredictions.\footnote{Given a classifier with $\epsilon > 1/2$, we obtain a classifier with $\epsilon < 1/2$ by reversing its output.} 
+\end{definition}
 Approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
+
+Finally, it is clear that the input distribution plays a central role regarding how efficiently the DDP can be solved. For instance, some deterministic streams may be expressed very compactly (such as the output of a PRNG with known seed) making the DDP relatively easy. Information-theoretically, if the source has $U$ bits of entropy then the situation is equivalent to having an $U$-bit, uniformly distributed input.\footnote{Another motivation for this is pragmatic: in many applications, duplicate detection is performed on \emph{hashes} of actual data rather than on the data itself, and we may assume that hashes are uniformly distributed.} 
 
 \todo[continuer].
 
