@@ -164,23 +164,26 @@ We therefore introduce new definitions suited to that setting:
 Our goal is to minimise both the false positive and false negative rates of a DDF, given a fixed and limited amount of memory. Before going into details, we first explore the limits of the problem, i.e., when perfect or very performant solutions exist.
 
 \begin{theorem}
-	For $M = w (\log_2(w) + 1) \log_2(|\Gamma|)$, the sliding window DDP can be solved with 0 errors in constant time.
+	For $M \geq w (\log_2(w) + 1) \log_2(|\Gamma|)$, the sliding window DDP can be solved exactly (with no errors) in constant time.
 \end{theorem}
 
 \begin{proof}
-	To store $w$ elements from a sliding window, the naive idea is to use a queue $Q$ of $w$ elements. However, this yields a complexity of $O(w)$ for lookup, which might be impractical. Thus, we create a second structure for the sake of quickly answering lookup questions.
+	We explicitly construct a DDF that performs the detection. Storing all $w$ elements in the sliding window takes $w\log_2(|\Gamma|)$ memory, using a FIFO queue $Q$; however 
+	lookup has a worst-time complexity of $O(w)$. 
 	
-	The dictionary $D$ has the form $\Gamma \Rightarrow \mathbb N$: keys are elements from the alphabet, values are integers serving as counters.
+	We therefore rely on an
+	ancillary data structure for the sake of quickly answering lookup questions.
+	Namely we use a dictionary $D$ whose keys are elements from $\Gamma$ and values are counters.
 	
-	During insertion of $e$, $e$ is appended to the queue and $D[e]$ is incremented. If the key $e$ did not exist in $D$, it is created first.
-	
-	The insertion of an element means that another element, at the end of the sliding window, is removed. For this, we pop the last element of $Q$, and get $e_{last} \gets Q.pop()$. Then, we decrement $D[e_{last}]$ and if $D[e_{last}] = 0$, the key is deleted from $D$.
+	Whe an element $e$ is inserted in the DDF, $e$ is stored and $D[e]$ is incremented (if the key $e$ did not exist in $D$, it is created first, and
+	$D[e]$ is set to $1$). In order to keep the number of stored elements to $w$, 
+	we discard the oldest element $e_\text{last}$ in $Q$. As we do so, we also decrement $D[e_\text{last}]$, and if $D[e_{last}] = 0$ the key is deleted from $D$. The whole insertion procedure is therefore performed in constant time.
 	
 	Lookup of an element $e^\star$ is simply done by looking whether the key $D[e^\star]$ exists, which is done in constant time.
 	
-	It is immediate to see that such a structure has a 0 error rate over the sliding window and that both insertion and lookup times are constant.
-	
-	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long), hence the claim. 
+	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus at most $w (\log_2(w) + 1) \log_2(|\Gamma|)$ bits are necessary for this DDF to work.
+
+	Finally this filter does not make any mistake, as every positive has a witness in $Q$ and any negative is absent from the last $w$ elements.
 \end{proof}
 
 
