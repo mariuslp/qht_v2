@@ -1,0 +1,50 @@
+\begin{tikzpicture}[scale=0.4]
+	
+	% F_0 under construction
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (1, 0) rectangle (2, 1);
+	\draw (0, 0) rectangle (2, 1) node[midway] {$\mathcal F_0$};
+
+	
+	% Other subfilters
+	\draw[pattern=north west lines, pattern color=gray] (3, 0) rectangle (5, 1) node[midway] {$\mathcal F_1$};
+	\draw[pattern=north west lines, pattern color=gray] (6, 0) rectangle (8, 1) node[midway] {$\mathcal F_2$};
+	\node at (9.5, 0.5) {...};
+	\draw[pattern=north west lines, pattern color=gray] (11, 0) rectangle (13, 1) node[midway] {$\mathcal F_{L-1}$};
+	
+	% old subfilters
+	\draw[dashed] (14, 0) rectangle (16, 1) node[midway] {$\mathcal F_{L}$};
+	\draw[dashed] (17, 0) rectangle (19, 1) node[midway] {$\mathcal F_{L+1}$};
+	
+	% arrows
+	\draw [<->,>=latex] (6, 1.5) -- (8, 1.5) node[above, midway] {$c$ elements};
+	\draw [<->,>=latex] (0, -3) -- (13, -3) node[below, midway] {Capacity of $Lc \approx w$ elements};
+	\draw [<->,>=latex] (1, 3) -- (15, 3) node[above, midway] {Current sliding window (of size $w$)};
+	
+	%stream 
+	\draw [<-, >=latex] (0, 5.5) -- (19, 5.5) node[above, midway] {Stream};
+	\foreach \x in {1, 3,...,18}
+	\draw (\x, 5.7) -- node[pos=0.5] (point\x) {} (\x, 5.3);
+	
+	\foreach \x in {2, 4,...,18}
+	\draw (\x, 5.6) -- node[pos=0.5] (point\x) {} (\x, 5.4);
+
+	\path (point1) node [below] {$e_m$};
+	\foreach \x [evaluate=\x as \i using int(\x-1)] in {3, 5,..., 9}
+	\path (point\x) node [below] {$e_{m-\i}$};
+	\path (point11) node [below] {$\dots$};
+	\path (point15) node [below] {$e_{m - w + 1}$};
+	
+	%queueing filter
+	\draw (-0.5, 2.5) rectangle (13.5, -2.5) node[anchor=south east] {Queuing filter};
+	
+	% legend
+	\draw[draw=none, pattern=north west lines, pattern color=gray] (0.5, -5) rectangle (1, -5.5);
+	\draw (0, -5) rectangle (1, -5.5) node[midway] {\tiny $\mathcal F$};
+	\draw (1.25, -5.25) node[anchor=west] {\tiny Subfilter being populated};
+	
+	\draw[pattern=north west lines, pattern color=gray] (7, -5) rectangle (8, -5.5) node[midway] {\tiny $\mathcal F_i$};
+	\draw (8.25, -5.25) node[anchor=west] {\tiny Populated active subfilter};
+	
+	\draw[dashed] (14, -5) rectangle (15, -5.5) node[midway] {\tiny $\mathcal F_j$};
+	\draw (1 5.25, -5.25) node[anchor=west] {\tiny Expired subfilter};
+	\end{tikzpicture}

@@ -185,19 +185,19 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 
 	Finally this filter does not make any mistake, as every positive has a witness in $Q$ and any negative is absent from the last $w$ elements.
 \end{proof}
-
-
-However, this implementation depends on $\log_2 |\Gamma|$, which might be arbitrarily large. We thus propose another solution, still in constant time but with a with a very low error rate, and not depending on $|\Gamma|$.
-
+The dependence on $\log_2 |\Gamma|$ can be droped, at the cost of allowing 
+errors:
 \begin{theorem}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the sliding window DDP can be solved with almost no error using $M$ bits of memory.
 	
 	More precisely, it is possible to create a filter of $M$ bits with an FNR of $0$, and an FPR of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
 	
-	If $M \simeq 5w\log_2 w$, then it is possible to upgrade this filter so its error rates remain the same but the complexity drops to constant time.
+	Using $M \simeq 5w\log_2 w$ bits of memory, a constant-time filter with the same error rate can be constructed.
 \end{theorem}
 
 \begin{proof}
+	Here again we explicitely construct the filters that achieve the theorem's bounds.
+
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
 The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$). The 50\% threshold we impose on $h$ is arbitrary but nonetheless practical.
 
@@ -206,7 +206,7 @@ Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of
 There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FNR of $0$ and a FPR of $1 - (1-\frac1{w^2})^w$.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 
-Note that this solution has a time complexity of $O(w)$. Using an additional dictionary like in the previous proof, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, but requiring $5w\log_2 w$ bits of memory.
+Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $5w\log_2 w$ bits of memory.
 \end{proof}
 
 When $\log_2|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naïve strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w \log_2|\Gamma|$ bits of memory.}, both in terms of time and memory.
@@ -218,82 +218,37 @@ Hence, very good solutions for situations where $M \approx 5w\log_2 w$ already e
 \subsection{DDP vs Sliding Window DDP}
 The sliding window variant of DDP may seem to be a slight weakening of the original problem. Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP. A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not suited to either sliding window or no sliding window DDP, as they work on what they call `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
 
-Of these, only the A2 and b\_DBF were designed for the sliding window DDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
+Of these, only the A2 and b\_DBF were designed in a way immediately applicable to the sliding window DDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
 \todo[Expliquer ?]
 
 
-\section{Queuing Filters for Sliding Window Adaptation}
-In this section, we describe how to turn DDF into sliding window DDFs. We first give the description of the setup, before studying the theoretical error rates.
+\section{Queuing filters}
+In this section, we describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
+A scheme describing our structure is detailed in \ref{fig:scheme}.
 
-\subsection{Queueing Filter}
-Let $\mathcal F$ be a DDF, not designed to work on a sliding window. Our idea, instead of spawning a filter $\mathcal F$ using as much memory as possible, is to create $L$ small versions of $\mathcal F$, which all have a limited timespan and can insert up to $c$ elements in their structure. We call these small filters subfilters. The subfilters are organised in a queue.
+\subsection{The queueing construction}
+
+\paragraph{Principle of operation.}
+Let $\mathcal F$ be a DDF. Rather than allocating the whole memory to $\mathcal F$, we will create $L$ copies of $\mathcal F$, each using a fraction of the available memory. Each of these \emph{subfilters} as a limited timespan, and is allowed up to $c$ insertions. The subfilters are organised in a queue.
 
 When inserting a new element in the queueing filter, it is inserted in the topmost subfilter of the queue. After $c$ insertions, a new empty filter is added to the queue, and the oldest subfilter is popped and erased.
 
-As such, we can consider that each subfilter operates on a sub-sliding window of size $c$. Given that we have $L$ subfilters and we want to operate on a sliding window of size $w$, we require $cL \approx w$.
-
-A scheme describing our structure is detailed in \ref{fig:scheme}.
+As such, we can consider that each subfilter operates on a sub-sliding window of size $c$, which makes the overall construction a DDF operating over a sliding window of size $w = cL$.
 
 \begin{figure}
-	\begin{tikzpicture}[scale=0.4]
-	
-	% F_0 under construction
-	\draw[pattern=north west lines, pattern color=gray, draw=none] (1, 0) rectangle (2, 1);
-	\draw (0, 0) rectangle (2, 1) node[midway] {$\mathcal F_0$};
-
-	
-	% Other subfilters
-	\draw[pattern=north west lines, pattern color=gray] (3, 0) rectangle (5, 1) node[midway] {$\mathcal F_1$};
-	\draw[pattern=north west lines, pattern color=gray] (6, 0) rectangle (8, 1) node[midway] {$\mathcal F_2$};
-	\node at (9.5, 0.5) {...};
-	\draw[pattern=north west lines, pattern color=gray] (11, 0) rectangle (13, 1) node[midway] {$\mathcal F_{L-1}$};
-	
-	% old subfilters
-	\draw[dashed] (14, 0) rectangle (16, 1) node[midway] {$\mathcal F_{L}$};
-	\draw[dashed] (17, 0) rectangle (19, 1) node[midway] {$\mathcal F_{L+1}$};
-	
-	% arrows
-	\draw [<->,>=latex] (6, 1.5) -- (8, 1.5) node[above, midway] {$c$ elements};
-	\draw [<->,>=latex] (0, -3) -- (13, -3) node[below, midway] {Capacity of $Lc \approx w$ elements};
-	\draw [<->,>=latex] (1, 3) -- (15, 3) node[above, midway] {Current sliding window (of size $w$)};
-	
-	%stream 
-	\draw [<-, >=latex] (0, 5.5) -- (19, 5.5) node[above, midway] {Stream};
-	\foreach \x in {1, 3,...,18}
-	\draw (\x, 5.7) -- node[pos=0.5] (point\x) {} (\x, 5.3);
-	
-	\foreach \x in {2, 4,...,18}
-	\draw (\x, 5.6) -- node[pos=0.5] (point\x) {} (\x, 5.4);
-
-	\path (point1) node [below] {$e_m$};
-	\foreach \x [evaluate=\x as \i using int(\x-1)] in {3, 5,..., 9}
-	\path (point\x) node [below] {$e_{m-\i}$};
-	\path (point11) node [below] {$\dots$};
-	\path (point15) node [below] {$e_{m - w + 1}$};
-	
-	%queueing filter
-	\draw (-0.5, 2.5) rectangle (13.5, -2.5) node[anchor=south east] {Queuing filter};
-	
-	% legend
-	\draw[draw=none, pattern=north west lines, pattern color=gray] (0.5, -5) rectangle (1, -5.5);
-	\draw (0, -5) rectangle (1, -5.5) node[midway] {\tiny $\mathcal F$};
-	\draw (1.25, -5.25) node[anchor=west] {\tiny Subfilter being populated};
-	
-	\draw[pattern=north west lines, pattern color=gray] (7, -5) rectangle (8, -5.5) node[midway] {\tiny $\mathcal F_i$};
-	\draw (8.25, -5.25) node[anchor=west] {\tiny Populated active subfilter};
-	
-	\draw[dashed] (14, -5) rectangle (15, -5.5) node[midway] {\tiny $\mathcal F_j$};
-	\draw (1 5.25, -5.25) node[anchor=west] {\tiny Expired subfilter};
-	\end{tikzpicture}
+	\input{fig/queuef.tex}
 	\caption{Architecture of the queuing filter. The filter is composed of $L$ subfilters $\mathcal F$, each containing up to $c$ elements. Once the newest subfilter has inserted $c$ elements in its structure, the oldest one is expired. As such, it is dropped and a new one is created and put under population at the beginning of the queue. In this example, the sub-sliding window of $\mathcal F_1$ is $\{e_{m-2}, e_{m-3}, e_{m-4}\}$.} \label{fig:scheme}
 \end{figure}
 
-When the user wants to lookup for an element, they query all subfilters. If any subfilter answers with \DUPLICATE, the queueing filter answers \DUPLICATE. Otherwise, it answers \UNSEEN. Insertion is a simple insertion in the topmost subfilter.
+\paragraph{Insertion and lookup.}
+The filter returns \DUPLICATE if and only if at least one subfilter does. Insertion is a simple insertion in the topmost subfilter.
 
-After $c$ insertions (where $c$ is a filter parameter), the last filter of the queue is removed, and a new (empty) filter is appended in front of the queue. We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \ref{alg:queueing}.
+\paragraph{Queue update.}
+After $c$ insertions, the last filter of the queue is dropped, and a new (empty) filter is appended in front of the queue.
 
-For the sake of simplicity in the pseudocode, we assume that the subfilter $\mathcal F$ has a function \textsf{Setup} which takes as input the available memory $m$, and returns an initialized empty filter $\mathcal F$ of size at most $m$..
+\paragraph{Pseudocode.}
+We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \ref{alg:queueing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. The \texttt{subfilter} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first  position.   
 
 \begin{algorithm}[]
 	\caption{Queueing Filter Setup, Lookup and Insert}\label{alg:queueing}
@@ -301,15 +256,14 @@ For the sake of simplicity in the pseudocode, we assume that the subfilter $\mat
 	\begin{algorithmic}[1]
 	\Function{Setup}{$\mathcal F, M, L, c$}
 		\Comment $M$ is the available memory, $\mathcal F$ the subfilter structure, $L$ the number of subfilters and $c$ the number of insertions per subfilter
-		\State Queue\_storage $\gets$ empty queue
-		\State Counter $\gets 0$
+		\State subfilters $\gets \emptyset$
+		\State counter $\gets 0$
+		\State $m \gets \lfloor M/L \rfloor$
 		\For{$i$ from $0$ to $L-1$}
-			\State Queue\_storage[i] $\gets$ $\mathcal F.\mathsf{Setup}(\lfloor M/L \rfloor)$
+			\State subfilters.push\_first$(\mathcal F.\mathsf{Setup}(m))$
 		\EndFor
-		Counter $\gets$ 0
-		\State Store $c$, $M$, $L$, $\mathcal F$
-		
-		\State \Return filter
+		\State \textbf{store} (subfilters, $L$, $m$, counter)
+		\State\Return filter
 	\EndFunction 
 	\item[]
 	\end{algorithmic}
@@ -317,7 +271,7 @@ For the sake of simplicity in the pseudocode, we assume that the subfilter $\mat
 	\begin{algorithmic}[1]
 	\Function{Lookup}{$e$}
 		\For{$i$ from $0$ to $L-1$}
-			\If{$\mathcal F_i.\mathsf{Lookup(e)}$}
+			\If{subfilter[i]$.\mathsf{Lookup(e)}$}
 				\State \Return $\DUPLICATE$
 			\EndIf
 		\EndFor
@@ -328,11 +282,11 @@ For the sake of simplicity in the pseudocode, we assume that the subfilter $\mat
 
 	\begin{algorithmic}[1]
 	\Function{Insert}{$e$}
-		\State $\mathcal F_0.\mathsf{Insert}(e)$
-		\State Counter++
-		\If{Counter == $c$}
-			\State Pop last element of Queue\_Storage
-			\State Insert $\mathcal F$.\textsf{Setup}($\lfloor M/L \rfloor$) at the beginning of Queue\_Storage
+		\State subfilters[0]$.\mathsf{Insert}(e)$
+		\State counter $\gets$ counter + 1 
+		\If{counter == $c$}
+			\State subfilters.pop()
+			\State subfilters.push\_first($\mathcal F.\textsf{Setup}(m)$)
 		\EndIf
 	\EndFunction
 	\end{algorithmic}
