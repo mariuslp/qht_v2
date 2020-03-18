@@ -123,6 +123,7 @@ We will usually consider the situations where the available memory is too small 
 However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^\star$ is a false positive (resp. false negative). 
 
 \begin{definition}[Probability of false positive, of false negative]
+	\label{def:pfp-pfn}
 	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
 \end{definition}
 
@@ -292,79 +293,88 @@ We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} an
 	\end{algorithmic}
 \end{algorithm}
 
-\subsection{Error Rate Analysis}
-Depending on the underlying subfilter, the queueing filter will behave differently. However, its false positive and false negative probabilities can be derived from the underlying subfilter's false positive and false negative probabilities. 
+\subsection{Error rate analysis}
+The queueing filter's properties can be derived from the subfilters'. False positive and false negative rates are of particular interest. In this section we consider a queuing filter $\mathcal Q$ with $L$ subfilters $\mathcal F_i$ and 
+capacity $c$ (which means that the last subfilter is dropeed after $c$ insertions).
 
-\subsubsection{Number of Elements in a Queueing Filter}\label{subsub:number_elements}
-Before deriving the error rates, it is important to analyse how many elements are in the filter. We know, by design, that no more than $cL$ elements can be present. However, after exactly $cL$ insertions, the last subfilter is deleted, to be replaced by an empty one at the beginning of the queue. Hence, after $cL$ insertions, only $c(L-1)$ elements are stored in the queueing filter.
+\paragraph{Remark.}
+	\label{subsub:number_elements}
+	By definition, after $c$ insertions the last subfilter is dropped.
+Information-theoretically, this means that all the information related to the elements inserted in that subfilter has been lost, and there are $c$ such elements by design. 
+Therefore, in the steady-state regime, the queuing filter holds information about at least $c(L-1)$  elements(immediatey after deleting the last subfilter) and at most $cL$ elements (immediately before this deletion). 
 
-Hence, the number of elements in the filter oscillate between $c(L-1)$ and $cL$. Furthermore, we have $cL \approx w$, which means that the number of elements in the filter can be higher than $w$. These facts must be kept in mind while deriving the error rates.
+As a result, if $w < cL$, the queuing filter can hold information about \emph{more than $w$ elements}.
 
 \subsubsection{Probability of False Positive}
+
 \begin{theorem}
-	Let $\mathcal Q$ be a queueing filter, consisting of $L$ underlying subfilters $\mathcal F$, each filled with up to $c$ elements. Let $\FP_{\mathcal F,m}$ be the probability of false positive of the subfilter $\mathcal F$ after $m$ insertions, let $\FP_{\mathcal Q, m}^w$ be the probability of false positive of $\mathcal Q$ after $m$ insertions on a sliding window of size $w$.
-	
-	We have $$\FP_{\mathcal Q, m}^w = 1 - (1 - \FP_{\mathcal F,c})^{L-1}(1 - \FP_{\mathcal F, m \% c })$$ where \% is the modulo operator.
+	\label{thm:queue-pfp}
+	 Let $\FP_{\mathcal Q, m}^w$ be the probability of false positive (def. \ref{def:pfp-pfn}) of $\mathcal Q$ after $m > w$ insertions, over a sliding window of size $w = cL$, we have:
+	\begin{equation}
+		\label{eq:queue-pfp}
+		\FP_{\mathcal Q, m}^w = 1 - \left(1 - \FP_{\mathcal F,c}\right)^{L-1} \left(1 - \FP_{\mathcal F, m \bmod c }\right)
+	\end{equation}
+	where $\bmod$ is the modulo operator and 
+	 $\FP_{\mathcal F,m}$ be the probability of false positive of any of $\mathcal Q$'s subfilters $\mathcal F_i$ after $m$ insertions.
 \end{theorem}
 
 \begin{proof}
-	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^\star \notwdup E$. We first take into account the remark in \ref{subsub:number_elements} that the filter $\mathcal Q$ may contain more than $w$ elements, and hence potentially contain $e$ in memory, in the last subfilter of the queue. However, such event is quite rare, and can be neglected: let $\delta = cL - w$ the number of additional elements that can be stored in $\mathcal Q$. The probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta \approx \frac{\delta}{|\Gamma|} \approx 0$ since $\delta$ is likely to be small, while $|\Gamma|$ is too big for being stored in memory.
+	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream and $e^\star \notwdup E$. 
 	
-	Hence, we can neglect the probability that $e^\star$ is present in the filter. Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is not a false positive if and only if all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN. This can be rewritten as $e^\star$ is not a false positive if and only if $e^\star$ is not a false positive for each subfilter.
+	Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is \emph{not} a false positive when all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN, i.e., when $e^\star$ is not a false positive for each subfilter.
 	
-	Given that each subfilter stores $c$ elements, safe for the first subfilter which only stores $m \% c$ elements, we get
-	$$\FP_{\mathcal Q, m}^w = 1 - (1 - \FP_{\mathcal F, m \% c })(1 - \FP_{\mathcal F,c})^{L-1}$$
+	Each subfilter has undergone $c$ insertions, safe for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
 \end{proof}
+
+\paragraph{Remark.} In the case $w < cL$, as mentioned previously, there is a non-zero probability that $e^\star$ is in the last subfilter's memory, despite not belonging to the sliding window. 
+	
+Assuming a uniformly random input stream, and writing $\delta = cL - w$, the probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta$. For large $\Gamma$ (as is expected to be the case in most applications), this probability is about $\frac{\delta}{|\Gamma|} \ll 1$. Hence, we can neglect the probability that $e^\star$ is present in the filter, and we consider the result of Theorem~\ref{thm:queue-pfp} to be a very good approximation even when $w < cL$.
 
 \subsubsection{Probability of False Negative}\label{sub:fnr}
 \begin{theorem}
-	Let $\mathcal Q$ be a queueing filter, consisting of $L$ underlying subfilters $\mathcal F$, each filled with up to $c$ elements. Let $\FN_{\mathcal F,m}$ be the probability of false negative of the subfilter $\mathcal F$ after $m$ insertions, let $\FN_{\mathcal Q, m}^w$ be the probability of false negative of $\mathcal Q$ after $m$ insertions on a sliding window of size $w$.
-	
-	For $p_m = \frac{1-\left(1-\frac 1{|\Gamma|}\right)^m}{1-\left(1-\frac 1{|\Gamma|}\right)^w}$, we have 
+	\label{thm:queue-pfn}
+	Let $\FN_{\mathcal Q, m}^w$ be the probability of false negative of $\mathcal Q$ after $m > w$ insertions on a sliding window of size $w = cL$, we have
 	\begin{align*}
-	\FN_{\mathcal Q, m}^w =& \left[p_c\FN_{\mathcal F,c} + \left(1-p_c\right)\left(1-\FP_{\mathcal F,c}\right)\right]^{L-1}
-	\\&\qquad
-	 \cdot \left[p_{m\%c}\FN_{\mathcal F,m\%c} + \left(1-p_{m\%c}\right)\left(1-\FP_{\mathcal F,m\%c}\right)\right]
+	\FN_{\mathcal Q, m}^w 
+	= & \left[p_c\FN_{\mathcal F,c} + \left(1-p_c\right)\left(1-\FP_{\mathcal F,c}\right)\right]^{L-1} \\
+	 \times & \left[p_{m\bmod c}\FN_{\mathcal F,m\bmod c} + \left(1-p_{m\bmod c}\right)\left(1-\FP_{\mathcal F,m\bmod c}\right)\right]
 	\end{align*}
-	
-	where $\%$ is the modulo operator.
+	where $\bmod$ is the modulo operator, $\FN_{\mathcal F,m}$ is the probability of false negative of any subfilter $\mathcal F$ after $m$ insertions, and
+	\begin{equation*}
+		p_m = \frac{1-\left(1-\frac 1{|\Gamma|}\right)^m}{1-\left(1-\frac 1{|\Gamma|}\right)^w}.
+	\end{equation*}
 \end{theorem}
 
 \begin{proof}
-	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^\star \wdup E$.
-	We first observe that if $cL > w$, there might be some duplicates of $e^\star$ that happened before the current sliding window, but might still be remembered by the oldest filter. However, as argued in the previous section, the probability of such an event is negligible.
+	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream, let $w$ be a sliding window and let $e^\star \wdup E$. 
 	
-	Hence, we consider that the only duplicates are part of the sliding window. $e^\star$ is a false negative if and only if all subfilters $\mathcal F_i$ answer $\mathcal F_i.\mathsf{Detect}(e^\star) = \UNSEEN$.
-	
-	There can be two cases:
+	Then $e^\star$ is a false negative if and only if all subfilters $\mathcal F_i$ answer $\mathcal F_i.\mathsf{Detect}(e^\star) = \UNSEEN$. There can be two cases:
 	\begin{itemize}
-		\item $e^\star$ is present in $\mathcal F_i$'s sub-sliding window
-		\item $e^\star$ is not present in $\mathcal F_i$'s sub-sliding window
+		\item $e^\star$ is present in $\mathcal F_i$'s sub-sliding window;
+		\item $e^\star$ is not present in $\mathcal F_i$'s sub-sliding window.
 	\end{itemize}
+In the first case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is a false negative for $\mathcal F_i$. This happens with probability $\FN_{\mathcal F,c}$ by definition, except for $\mathcal F_0$, for which the probability is $\FN_{\mathcal F, m\bmod c}$.
 
-In the first case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is a false negative for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $\FN_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $\FN_{\mathcal F, m\%c}$.
+In the second case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is not a false positive for $\mathcal F_i$, which happens with probability $1-\FP_{\mathcal F,c}$, execpt for $\mathcal F_0$, for which the probability is $1-\FP_{\mathcal F, m\bmod c}$.
 
-In the second case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is not a false positive for $\mathcal F_i$. Hence, in this case, the probability of $\mathcal F_i$ to return \UNSEEN is $1-\FP_{\mathcal F,c}$. For the subfilter $\mathcal F_0$, however, the probability is $1-\FP_{\mathcal F, m\%c}$.
-
-Now, the probability $p_c$ for $e^\star$ to be in subfilter $\mathcal F_i$ (which has had $c$ insertions) sub-sliding window is 
-
+Finally, each event is weighted by the probability $p_c$ that $e^\star$ is in $\mathcal F_i$'s sub-sliding window:
 \begin{align*}
-	p_c =& Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
-	=& \frac{Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{Pr[e^\star \wdup E]}\\
-	=& \frac{Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{Pr[e^\star \wdup E]}\\
-	=& \frac{1 - Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - Pr[e^\star \notwdup E]}\\
-	p_c=& \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
+	p_c 
+	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
+	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
+	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}\\
+	& = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
+	& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
 \end{align*}
-
-Finally, we get that the probability of a false positive for $\mathcal Q$ over the sliding window $w$ is 
-\begin{align*}
-\FN^w_{\mathcal Q, m} =& \left[p_c\FN_{\mathcal F,c} + (1-p_c)(1-\FP_{\mathcal F,c})\right]^{L-1}
-\\&\quad
-\cdot \left[p_{m\%c}\FN_{\mathcal F,m\%c} + (1-p_{m\%c})(1-\FP_{\mathcal F,m\%c})\right]\\
-\end{align*}
+This concludes the proof.
 \end{proof}
+\paragraph{Remark.} As previously, the effect of $w < cL$ is negiglible for all practical purposes and Theorem~\ref{thm:queue-pfn} is considered a good approximation in that regime. 
 
-This probability is quite complicated and does not allow, in the general case, for an in-depth analysis of the probability of false negative.
+\subsection{FNR and FPR}
+
+\todo[TODO]
+
+\section{Optimising queuing filters}
 
 \begin{theorem}
 	In first approximation, a low value of $L$ leads to a higher false negative probability for the queueing filter.
