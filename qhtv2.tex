@@ -334,14 +334,14 @@ Assuming a uniformly random input stream, and writing $\delta = cL - w$, the pro
 \begin{theorem}
 	\label{thm:queue-pfn}
 	Let $\FN_{\mathcal Q, m}^w$ be the probability of false negative of $\mathcal Q$ after $m > w$ insertions on a sliding window of size $w = cL$, we have
-	\begin{align*}
+	\begin{equation}
 	\FN_{\mathcal Q, m}^w 
-	= & \left[p_c\FN_{\mathcal F,c} + \left(1-p_c\right)\left(1-\FP_{\mathcal F,c}\right)\right]^{L-1} \\
-	 \times & \left[p_{m\bmod c}\FN_{\mathcal F,m\bmod c} + \left(1-p_{m\bmod c}\right)\left(1-\FP_{\mathcal F,m\bmod c}\right)\right]
-	\end{align*}
-	where $\bmod$ is the modulo operator, $\FN_{\mathcal F,m}$ is the probability of false negative of any subfilter $\mathcal F$ after $m$ insertions, and
+	=  u_c^{L-1} u_{m \bmod c}
+	\end{equation}
+	where $\bmod$ is the modulo operator, and we have introduced the short-hand notation $u_\eta= p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$ where 
+	$\FN_{\mathcal F,m}$ is the probability of false negative of any subfilter $\mathcal F$ after $m$ insertions, and
 	\begin{equation*}
-		p_m = \frac{1-\left(1-\frac 1{|\Gamma|}\right)^m}{1-\left(1-\frac 1{|\Gamma|}\right)^w}.
+		p_m = \frac{1-\left(1-\frac 1{|\Gamma|}\right)^m}{1-\left(1-\frac 1{|\Gamma|}\right)^w} \approx \frac{m}{w}.
 	\end{equation*}
 \end{theorem}
 
@@ -379,6 +379,15 @@ This concludes the proof.
 	 = \frac1c \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, \ell}^w \\
 	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
 	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} \FP_{\mathcal F, \ell}
+\end{align*}
+
+\begin{align*}
+	\FNR_{\mathcal Q, cn}^w 
+	& = \frac{1}{cn} \sum_{k=1}^{cn} \FN_{\mathcal Q, k}^w 
+	 = \frac{1}{cn} \sum_{k=1}^{n} \sum_{\ell = 0}^{c-1} \FN_{\mathcal Q, k + \ell}^w 
+	= \frac1c \sum_{\ell = 0}^{c-1} \FN_{\mathcal Q, \ell}^w \\
+	& = \frac1c \sum_{\ell = 0}^{c-1} u_c^{L-1} u_{\ell} 
+	 = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
 \end{align*}
 
 \section{Optimising queuing filters}
