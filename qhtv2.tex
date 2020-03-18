@@ -127,7 +127,7 @@ However, it is more practical to work with another value, namely, the probabilit
 	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
 \end{definition}
 
-One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^m \FP_i$, and similarly for $\FNR_n$.
+One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^n \FP_i$, and similarly for $\FNR_n$.
 
 \subsection{Filter Saturation and Sliding Windows}
 Unfortunately, efficient duplicate detection over an infinite stream has been identified as an unsolvable problem \cite{10.1145/3297280.3297335}. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
@@ -372,7 +372,14 @@ This concludes the proof.
 
 \subsection{FNR and FPR}
 
-\todo[TODO]
+\begin{align*}
+	\FPR_{\mathcal Q, cn}^w
+	& = \frac{1}{cn} \sum_{k=1}^{cn} \FP_{\mathcal Q, k}^w 
+	 = \frac{1}{cn} \sum_{k=1}^{n} \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, k + \ell}^w 
+	 = \frac1c \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, \ell}^w \\
+	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
+	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} \FP_{\mathcal F, \ell}
+\end{align*}
 
 \section{Optimising queuing filters}
 
