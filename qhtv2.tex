@@ -184,7 +184,7 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 	
 	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus at most $w (\log_2(w) + 1) \log_2(|\Gamma|)$ bits are necessary for this DDF to work.
 
-	Finally this filter does not make any mistake, as every positive has a witness in $Q$ and any negative is absent from the last $w$ elements.
+	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact tract of how many times each element was present in the sliding window.
 \end{proof}
 The dependence on $\log_2 |\Gamma|$ can be droped, at the cost of allowing 
 errors:
@@ -226,7 +226,7 @@ Of these, only the A2 and b\_DBF were designed in a way immediately applicable t
 
 \section{Queuing filters}
 In this section, we describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
-A scheme describing our structure is detailed in \ref{fig:scheme}.
+A scheme describing our structure is detailed in Figure~\ref{fig:scheme}.
 
 \subsection{The queueing construction}
 
@@ -249,7 +249,7 @@ The filter returns \DUPLICATE if and only if at least one subfilter does. Insert
 After $c$ insertions, the last filter of the queue is dropped, and a new (empty) filter is appended in front of the queue.
 
 \paragraph{Pseudocode.}
-We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \ref{alg:queueing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. The \texttt{subfilter} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first  position.   
+We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in Algorithm~\ref{alg:queueing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. The \texttt{subfilters} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first  position.   
 
 \begin{algorithm}[]
 	\caption{Queueing Filter Setup, Lookup and Insert}\label{alg:queueing}
@@ -272,7 +272,7 @@ We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} an
 	\begin{algorithmic}[1]
 	\Function{Lookup}{$e$}
 		\For{$i$ from $0$ to $L-1$}
-			\If{subfilter[i]$.\mathsf{Lookup(e)}$}
+			\If{subfilters[i]$.\mathsf{Lookup(e)}$}
 				\State \Return $\DUPLICATE$
 			\EndIf
 		\EndFor
@@ -301,7 +301,7 @@ capacity $c$ (which means that the last subfilter is dropeed after $c$ insertion
 	\label{subsub:number_elements}
 	By definition, after $c$ insertions the last subfilter is dropped.
 Information-theoretically, this means that all the information related to the elements inserted in that subfilter has been lost, and there are $c$ such elements by design. 
-Therefore, in the steady-state regime, the queuing filter holds information about at least $c(L-1)$  elements(immediatey after deleting the last subfilter) and at most $cL$ elements (immediately before this deletion). 
+Therefore, in the steady-state regime, the queuing filter holds information about at least $c(L-1)$  elements (immediately after deleting the last subfilter) and at most $cL$ elements (immediately before this deletion). 
 
 As a result, if $w < cL$, the queuing filter can hold information about \emph{more than $w$ elements}.
 
@@ -467,9 +467,9 @@ Note, as highlighted in the proof, that this bound is not tight, and that better
 As such, the best filter will be the one the closest to this error rate.
 
 \subsection{DDF Comparison}
-A filter comparison was already made in \cite{10.1145/3297280.3297335}. Taking the same filters parameters, created another benchmark, studying the resistance of each DDF to saturation. We added the lower bound on the error rate. More details about the experiments are given in \ref{sub:saturation}. We observe in \ref{fig:graph_n} that the two most efficient filters are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
+A filter comparison was already made in \cite{10.1145/3297280.3297335}. Taking the same filters parameters, created another benchmark, studying the resistance of each DDF to saturation. We added the lower bound on the error rate. More details about the experiments are given in Section~\ref{sub:saturation}. We observe in Figure~\ref{fig:graph_n} that the two most efficient filters are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
 
-However, as noted in \ref{sub:related}, A2 filters can be considered as a queuing filter, with $L=2$ and Bloom filters as subfilters. Hence, as it is not interesting to put a queueing filter inside a queueing filter, we will rather use QHT for practical benchmarking of the queueing filter.
+However, as noted in Section~\ref{sub:related}, A2 filters can be considered as a queuing filter, with $L=2$ and Bloom filters as subfilters. Hence, as it is not interesting to put a queueing filter inside a queueing filter, we will rather use QHT for practical benchmarking of the queueing filter.
 
 \subsection{Parameter Tuning}
 The parameters of a queueing filter are: the parameters of the subfilter, the number $L$ of subfilters and the number $c$ of insertions per subfilter. 
@@ -480,10 +480,10 @@ Furthermore, we have the relation $cL \approx w$, so there is only one free para
 
 As such, an optimal parameter tuning would be to set $L$ so that the error rate (defined as the sum of the FPR and FNR) would be minimal. Nonetheless, given the complicated nature of the FPR and FNR formulae, deriving an optimal $L$ is out of reach.
 
-We have observed in \ref{sub:fnr} that the FN is positively correlated with
+We have observed in Section~\ref{sub:fnr} that the FN is positively correlated with
 $\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated with the same value. As such, decreasing the probability of false positive leads to an increase in the probability of false negatives. 
 
-\todo[FAUX, peut etre log ? However, practical tests show (see \ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
+\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
 
 %Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
 
@@ -495,7 +495,7 @@ We first present a comparison of the resistance of various DDFs against saturati
 
 Then, we design an experiment in which we compare the error rates of a QHT and a queuing filter, using the same QHT as a subfilter.
 
-We remind the reader that for small sliding windows compared to the memory size, optimal or nearly optimal solutions can be implemented, as discussed in \ref{sub:opt_solutions}. However, since we must evaluate the number of duplicates in the streams we use, we cannot benchmark our filter in real-life situations, as doing so would require way too much memory for keeping track of the duplicates.
+We remind the reader that for small sliding windows compared to the memory size, optimal or nearly optimal solutions can be implemented, as discussed in Section~\ref{sub:opt_solutions}. However, since we must evaluate the number of duplicates in the streams we use, we cannot benchmark our filter in real-life situations, as doing so would require way too much memory for keeping track of the duplicates.
 
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
 In this section, we compare the resistance of various filters to saturation. From the streaming filters we found in the literature, we only considered the filters not designed for operating on a sliding window, and parameters as \cite{10.1145/3297280.3297335}, namely:
@@ -509,7 +509,7 @@ In this section, we compare the resistance of various filters to saturation. Fro
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
 
-The stream was a stream of uniform random elements, taken from an alphabet of $2^{26}$ elements, and amounts for about 8\% duplicates on the 150 000 000 elements in the longest stream used. Results are plotted in \ref{fig:graph_n}.
+The stream was a stream of uniform random elements, taken from an alphabet of $2^{26}$ elements, and amounts for about 8\% duplicates on the 150 000 000 elements in the longest stream used. Results are plotted in Figure~\ref{fig:graph_n}.
 
 \begin{figure}
 	\input{er_n_artificial}
@@ -519,7 +519,7 @@ The stream was a stream of uniform random elements, taken from an alphabet of $2
 We observe that the best filters are, in order, QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
 
 \subsection{Benchmarking Various Queuing Filters}
-Now that DDF are compared on a full stream, we observe how each of them behave when they act as a subfilter in our queueing scheme. The goal is to empirically prove the assumption made in \ref{sub:optimal_ddf}, stating that the best (error-wise) DDF operating on a full stream leads to the best (error-wise) queueing filter operating on a sliding window. From \ref{fig:graph_n}, we observe that the best DDF for DDP on a full stream are, in order, QHT, SQF, Cuckoo, SQF.
+Now that DDF are compared on a full stream, we observe how each of them behave when they act as a subfilter in our queueing scheme. The goal is to empirically prove the assumption made in Section~\ref{sub:optimal_ddf}, stating that the best (error-wise) DDF operating on a full stream leads to the best (error-wise) queueing filter operating on a sliding window. From Figure~\ref{fig:graph_n}, we observe that the best DDF for DDP on a full stream are, in order, QHT, SQF, Cuckoo, SQF.
 
 For this, we used four different queueing filters, with $L = 10$ subfilters each, and with the following subfilters: 
 \begin{itemize}
@@ -529,7 +529,7 @@ For this, we used four different queueing filters, with $L = 10$ subfilters each
 	\item SBF \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
 \end{itemize}
 
-We used a random stream of $1,000,000$ elements uniformly selected from an alphabet of size $|\Gamma| = 2^{16}$, a memory size $M=100,000$ bits, a sliding window of size $w = 10,000$. The error rates (defined as the sum of $\FNR^w$ and $\FPR^w$) are displayed in \ref{tab:comparing_queueing}. We see that in all cases, the QHT subfilter performs better or almost as well than any other subfilter, hence validating the heuristic assumption.
+We used a random stream of $1,000,000$ elements uniformly selected from an alphabet of size $|\Gamma| = 2^{16}$, a memory size $M=100,000$ bits, a sliding window of size $w = 10,000$. The error rates (defined as the sum of $\FNR^w$ and $\FPR^w$) are displayed in Table~\ref{tab:comparing_queueing}. We see that in all cases, the QHT subfilter performs better or almost as well than any other subfilter, hence validating the heuristic assumption.
 
 \begin{table}[]
 	\begin{tabular}{rccccc}
