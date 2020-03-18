@@ -183,7 +183,7 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 	
 	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus at most $w (\log_2(w) + 1) \log_2(|\Gamma|)$ bits are necessary for this DDF to work.
 
-	Finally this filter does not make any mistake, as every positive has a witness in $Q$ and any negative is absent from the last $w$ elements.
+	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact tract of how many times each element was present in the sliding window.
 \end{proof}
 The dependence on $\log_2 |\Gamma|$ can be droped, at the cost of allowing 
 errors:
@@ -248,7 +248,7 @@ The filter returns \DUPLICATE if and only if at least one subfilter does. Insert
 After $c$ insertions, the last filter of the queue is dropped, and a new (empty) filter is appended in front of the queue.
 
 \paragraph{Pseudocode.}
-We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \ref{alg:queueing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. The \texttt{subfilter} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first  position.   
+We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in \ref{alg:queueing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. The \texttt{subfilters} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first  position.   
 
 \begin{algorithm}[]
 	\caption{Queueing Filter Setup, Lookup and Insert}\label{alg:queueing}
@@ -271,7 +271,7 @@ We give a brief pseudo-code of the queuing filter's functions \textsf{Lookup} an
 	\begin{algorithmic}[1]
 	\Function{Lookup}{$e$}
 		\For{$i$ from $0$ to $L-1$}
-			\If{subfilter[i]$.\mathsf{Lookup(e)}$}
+			\If{subfilters[i]$.\mathsf{Lookup(e)}$}
 				\State \Return $\DUPLICATE$
 			\EndIf
 		\EndFor
