@@ -371,7 +371,7 @@ This concludes the proof.
 \paragraph{Remark.} As previously, the effect of $w < cL$ is negiglible for all practical purposes and Theorem~\ref{thm:queue-pfn} is considered a good approximation in that regime. 
 
 \subsection{FNR and FPR}
-
+From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR:
 \begin{align*}
 	\FPR_{\mathcal Q, cn}^w
 	& = \frac{1}{cn} \sum_{k=1}^{cn} \FP_{\mathcal Q, k}^w 
@@ -380,7 +380,6 @@ This concludes the proof.
 	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
 	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
 \end{align*}
-
 \begin{align*}
 	\FNR_{\mathcal Q, cn}^w 
 	& = \frac{1}{cn} \sum_{k=1}^{cn} \FN_{\mathcal Q, k}^w 
@@ -389,9 +388,9 @@ This concludes the proof.
 	& = \frac1c \sum_{\ell = 0}^{c-1} u_c^{L-1} u_{\ell} 
 	 = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
 \end{align*}
-
+In particular, these quantities do not depend on $n$. A corollary is that the queuing filter does not exhibit saturation.
 \section{Optimising queuing filters}
-
+\todo[À vérifier je suis pas convaincu encore]
 \begin{theorem}
 	In first approximation, a low value of $L$ leads to a higher false negative probability for the queueing filter.
 \end{theorem}
@@ -407,69 +406,59 @@ The approximations made in this proof are backed by experimental results.
 \end{proof}
 
 
-\section{Application on Existing DDFs}
-As our queuing filter relies on another DDF subfilter, we must pick one existing DDF from the literature.
-\subsection{DDF Subfilter Selection Strategy}
-As a matter of fact, it is preferable to use only one kind of DDF as subfilter, as proven by the following theorem.
+\section{Application to existing DDFs}
+Our queuing construction relies on a choice of subfilters. A first observation 
+is that we may assume that all subfilters can be instances of a single 
+DDF design (rather than a combination of different designs).
+
+Indeed, a simple symmetry argument shows that a heterogenous selection of subfilters is always worse than a homogeneous one: the crux is that all subfilters play the same role in turn. Therefore we lose nothing by replacing atomically one subfilter by a more efficient one. Applying this to each subfilter we end up with a homogenous selection.
+
+It remains to decide which subfilter construction to choose. 
+
+\subsection{Subfilter selection}
+When comparing different DDFs, one interesting metric in our context is how fast
+such filters saturate: indeed, in the original DDP setting, all filters eventually saturate \cite{10.1145/3297280.3297335}. 
 
 \begin{theorem}
-	An optimal queueing filter only uses one kind of subfilter.
+	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $ER_n = \FP_n + \FN_n$ satisfies
+	\begin{equation}
+		ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
+	\end{equation}
+	for any $n > M$.
 \end{theorem}
+	In particular, the asymptotic error rate $ER_\infty$ satisfies $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
 
 \begin{proof}
-	One could imagine a queueing filter in which subfilters would alternate between, say, subfilter of type $A$ and of type $B$. However, we show with a simple symmetry argument that this kind of queueing filter is sub-optimal.
+	By definition, a perfect filter has the lowest possible error rate.
+	With $M$ bits of memory, a perfect filter can store at most $M$ elements in memory \cite[Theorem 2.1]{10.1145/3297280.3297335}. Up to reordering the stream, without loss of generality because it is random, we may assumethat the filter stores the $M$ last elements of the stream: any other strategy cannot yield a strictly lower error rate.
 	
-	Let us consider a queueing filter relying on several kinds of subfilters. Given that all subfilters play the same role, and that their efficiency is independent of the other subfilters present, we know that one less efficient subfilter can be replaced by a more efficient one, directly improving the efficiency of the queueing filter.
-\end{proof}
-
-However, making a theoretical analysis of all DDFs error rates may be tedious. Instead, we propose a ranking on existing DDFs. As \cite{10.1145/3297280.3297335} mentioned, filters all reach a saturation state. The idea is then to order DDFs by their resistance to saturation --i.e., by ranking them by the time they take to reach saturation.
-
-Before ranking the DDFs by the error rate, we first introduce a lower bound on said rate. 
-
-Note: given we are working on selecting the best subfilter for our queueing filter, in this section we are \emph{not} working over a sliding window.
-
-\subsection{Optimal Error Probability on a DDF}\label{sub:optimal_ddf}
-    \begin{theorem}
-	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF of size $M$, the error probability $ER_n$ (consisting of the sum of the FP and FN probabilities) is such that
-	$$ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}$$ for any $n > M$.
-	
-	Especially, for any filter of size $M$, the asymptotic error rate $ER_\infty$ is such that $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M}$.
-\end{theorem}
-We remind that in this section, we are working on DDP over the whole stream and not over a sliding window.
-
-\begin{proof}
-	According to classical results on information theory, a perfect filter must use at least $1$ bit to remember one element from a random uniform source with no possible error.
-	
-	Since the filter has $M$ bits of memory, we conclude that a perfect filter can store at most $M$ elements in memory. Assume that such a filter exists. Because the stream is random, we can assume without loss of generality that the filter stores the M last elements of the stream: any other strategy cannot yield a lower error rate, given the stream is random.
-	
-	Let us derive the error rate of such a filter.
 	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter can choose to answer randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory. An optimal filter will lower the error rate of any filter using the same strategy with a different probability.
 	
 	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
 	
-	On the other hand, a duplicate element $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event "\textsf{There is at least one duplicate in the stream} and $C$ be the event \textsf{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}.
-	
-	We have that $e^\star$ triggers a false negative with probability
-	
+	On the other hand, a duplicate element $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
 	\begin{align*}
-	\FN_n &= (1 - P[C | D])(1-p) =  \left(1 - \frac{P[C \cap D]}{P[D]}\right)(1-p)\\
-	& = \left(1 - \frac{P[C]}{P[D]}\right)(1-p) =  \left(1 - \frac{1 - P[\bar C]}{1 - P[\bar D]}\right)(1-p) \\
+	\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
+	& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
 	\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
 	\end{align*}
-	
-	Hence, the error probability of the filter is $ER_n = \FN_n + p =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p =$ $ 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p)$, which is minimized when $p = 0$.
-	
-	Given that, by definition, a perfect filter has the lowest error rate of any filter, we get the desired result.
+	Hence, the error probability of the filter is
+	\begin{align*}
+		ER_n 
+		& = \FN_n + p \\
+		& =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p \\
+		& = 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
+	\end{align*}
+	which is minimized when $p = 0$. 
 	\end{proof}
 
-Note, as highlighted in the proof, that this bound is not tight, and that better bounds may exist. Also note that this bound only applies when the stream is random: when patterns are found in the stream, information theory informs that data may be stored more efficiently.
+Note, as highlighted in the proof, that this bound is \emph{not tight}: better bounds may exist, the study of which we leave as an open question for future work. 
 
-As such, the best filter will be the one the closest to this error rate.
+The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarizes in Figure~\ref{fig:graph_n}. It appears that the two most efficient filters (in terms of saturation rate) are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
 
-\subsection{DDF Comparison}
-A filter comparison was already made in \cite{10.1145/3297280.3297335}. Taking the same filters parameters, created another benchmark, studying the resistance of each DDF to saturation. We added the lower bound on the error rate. More details about the experiments are given in Section~\ref{sub:saturation}. We observe in Figure~\ref{fig:graph_n} that the two most efficient filters are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
+Remarkably, as noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters). This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
 
-However, as noted in Section~\ref{sub:related}, A2 filters can be considered as a queuing filter, with $L=2$ and Bloom filters as subfilters. Hence, as it is not interesting to put a queueing filter inside a queueing filter, we will rather use QHT for practical benchmarking of the queueing filter.
+In the experiments we use QHT for practical benchmarking of the queueing filter.
 
 \subsection{Parameter Tuning}
 The parameters of a queueing filter are: the parameters of the subfilter, the number $L$ of subfilters and the number $c$ of insertions per subfilter. 
