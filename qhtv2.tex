@@ -569,22 +569,19 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 %	\caption{Error rate (times 100) of various queueing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{16}$. For each sliding window, the best performance is written in bold.}\label{tab:comparing_queueing}
 %\end{table}
 
-\subsection{Benchmark of the influence of $L$ parameter}\label{sub:L_bench}
+\subsection{How many subfilters?}\label{sub:L_bench}
+\todo[À faire]
 In this section, we make experiments on the influence of $L$ on the error rate of the queueing filter. 
 
 \subsection{Comparison of QHT and QHT-Queueing Filter}
+\todo[À faire]
 In this section, we compare the efficiency of QHT and QHT-queueing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
-\todo[]
-
-
 
 \section{Adversarial Resistance}
 
-In this section, we now focus on the security on the queueing filter. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. This has practical applications in several topics of security, including cache saturation or denial of service by forcing cache misses, or by making undetected fraudulent payments. \todo[source]. 
+As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems. \todo[source, sans doute le papier sur les adversarial bloom filters?]. 
 
 We first recall the definition of an adversarial game, adapted to our context.
-
-
 \begin{definition}
 	An adversary $\mathcal A$ feeds data to a sliding window DDF $\mathcal Q$, and for each inserted element, $\mathcal A$ knows whether $\mathcal Q$ answers $\DUPLICATE$ or $\UNSEEN$, but has not access to $\mathcal Q$'s internal state $\mathcal M$. The game has two distinct parts.
 
@@ -595,22 +592,21 @@ We first recall the definition of an adversarial game, adapted to our context.
  $\mathcal A$ wins the $n$-false positive adversarial game (resp. $n$-false negative adversarial game) if and only if $e^\star$ is a false positive (resp. a false negative).
  
  \end{definition}
+Variants of these games over a sliding window of size $w$ are immediate.
  
-This adversarial game can be trivially adapted for a false positive (resp. false negative) adversarial game over a sliding window of size $w$, hence we omit its formal definition.
- 
-\subsection{First Approach on the Whole Sliding Window}
-We first define what an adversarial false positive resistance over a sliding window is, before giving its value for any queueing filter based on the subfilter's properties.
+\subsection{False positive and false negative resistance}
 
-\begin{definition}{Adversarial False Positive Resistance}
-	Let $\mathcal F$ be a filter, let $E$ be a stream. We say that $\mathcal F$ is $(p, n)$-resistant to adversarial false positives if no polynomial-time probabilistic (PPT) adversary $\mathcal A$ can win the $n-$false positive adversarial game with probability more than $p$.  
+\begin{definition}[Adversarial False Positive Resistance]
+	We say that a DDF $\mathcal F$ is $(p, n)$-\emph{resistant to adversarial false positives} if no polynomial-time probabilistic (PPT) adversary $\mathcal A$ can win the $n-$false positive adversarial game with probability more than $p$.  
 \end{definition}
+Note that if $\mathcal F$ is $(p,n)$-resistant, then it is $(p, m)$-resistant for all $m < n$.
 
-Note that if $\mathcal F$ is $(p,n)$-resistant, it is as well $(p, m)$-resistant for any $m < n$.
+We define similarly the notion of being \emph{resistant to adversarial false negatives}. Finally, both definitions also make sense in a sliding window context.
 
-This definition can be trivially adapted for false negative resistance, and for resistance over a sliding window.
+\subsection{Bound on false positive resistance}
 
 \begin{theorem}
-	Let $\mathcal Q$ be a filter of $L$ subfilters $\mathcal F_i$, with $c$ insertions maximum per subfilter, let $E$ be a stream, let $w$ be a sliding window size. 
+	Let $\mathcal Q$ be a filter of $L$ subfilters $\mathcal F_i$, with $c$ insertions maximum per subfilter, let $w$ be a sliding window. 
 	
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false positive attacks and $cL \leq w$, then $\mathcal Q$ is $(1-(1-p)^L, w)$-resistant to adversarial false positive attacks on a sliding window of size $w$.
 	
@@ -618,21 +614,18 @@ This definition can be trivially adapted for false negative resistance, and for 
 \end{theorem}
 
 \begin{proof}
-	Let us first assume that $cL \leq w$. This implies that information-theory wise, the elements remembered by each subfilter belong to the sliding window.
+	If $cL \leq w$, then information-theoretically the subfilters only have information on elements in the sliding window.
+	The probability of false positive for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$, which is strictly increasing with $\FP_{\mathcal F,c}$. Hence, the optimal solution is reached by to maximising the probability of false positive in each subfilter $\mathcal F_i$. By hypothesis the latter is bounded above by $p$ after $c$ insertions.
 	
-	The probability of false positive for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$. As we see, the probability of false positive in $\mathcal Q$ over the sliding window $w$ is strictly increasing with the probability of false positive in any subfilter $\mathcal F_i$. Hence, the optimal solution is to maximise the probability of false positive in each subfilter $\mathcal F_i$, which by hypothesis is bounded above by $p$ after $c$ insertions.
+	On the other hand, if $cL > w$ then oldest filter holds information about elements that are not in the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
 	
-	On the other hand, if $cL > w$, it means that the oldest filter remembers elements that do not belong to the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
-	
-	After $w$ insertions, it is quite likely that the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ probability of success.
-	
-	Note that if, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the default policy the same reasoning as for when $cL \leq w$ still applies, hence the lower bound (which is, in this case, an equality).
+	After $w$ insertions, the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ probability of success. If, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the same reasoning as for when $cL \leq w$ still applies, hence we get the correspondig lower bound (which is, in this case, an equality).
 \end{proof}
 
-\subsection{Adversarial False Negative}
+\subsection{Bounds on false negative resistance}
 
 \begin{theorem}
-	Let $\mathcal Q$ be a filter of $L$ subfilters of kind $\mathcal F$, with $c$ insertions maximum per subfilter, let $E$ be a stream, let $w$ be a sliding window size. 
+	Let $\mathcal Q$ be a filter of $L$ subfilters of kind $\mathcal F$, with $c$ insertions maximum per subfilter, and let $w$ be a sliding window. 
 	
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false negative attacks, then $\mathcal A$ can win the adversarial game on the sliding window $w$ with probability at least $p^L$.
 	
