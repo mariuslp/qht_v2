@@ -552,25 +552,14 @@ These filters are run against a stream of uniformly sampled elements from an alp
 	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
 \end{figure*}
 
-We observe that the best filters are, in order, QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
+The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
 
-\subsection{Benchmarking Various Queuing Filters}
-Now that DDF are compared on a full stream, we observe how each of them behave when they act as a subfilter in our queueing scheme. The goal is to empirically prove the assumption made in Section~\ref{sub:optimal_ddf}, stating that the best (error-wise) DDF operating on a full stream leads to the best (error-wise) queueing filter operating on a sliding window. From Figure~\ref{fig:graph_n}, we observe that the best DDF for DDP on a full stream are, in order, QHT, SQF, Cuckoo, SQF.
+\subsection{Benchmarking Queuing Filters}
+We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sub:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queueing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queueing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
-For this, we reused the same filters are previously mentioned.
-%\begin{itemize}
-%	\item QHT subfilter \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint. 
-%	\item Cuckoo Filter \cite{Fan14}, adapted for streaming as recommanded by \cite{10.1145/3297280.3297335}, cells containing 1 element of 3 bits each
-%	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
-%	\item SBF \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
-%	\item A2
-%\end{itemize}
+A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer. This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
-We used a random stream of $10,000,000$ elements uniformly selected from an alphabet of size $|\Gamma| = 2^{18}$, a memory size $M=100,000$ bits, a sliding window of size $w = 10,000$. The error rates (defined as the sum of $\FNR^w$ and $\FPR^w$) are displayed in Figure~\ref{tab:comparing_queueing}. We see that in all cases, the QHT subfilter performs better or almost as well than any other subfilter, hence validating the heuristic assumption.
-
-A very interesting observation is that, for $N$ the length of the stream, when $w \approx N/L$ we observe a decrease in the error rates. While being interesting on the theoretical side, in practice we usually assume that the stream is infinite, so we cannot rely on this fact for designing our filter. As such, the study of the phenomenon is left for future work.
-
-\begin{figure}
+\begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
 	\caption{Error rate (times 100) of various queueing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{18}$.}\label{tab:comparing_queueing}
 \end{figure}
