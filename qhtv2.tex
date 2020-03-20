@@ -666,6 +666,23 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 \bibliography{qhtv2}
 
 %% Appendix
-%\appendix
+\appendix
+
+\section{Effects of the finite simulation}
+Theoretical results about the queuing construction apply in principe to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artifacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
+
+To accentuate this effect we use the Pearson $\phi$ coefficient that measures statistical correlation (between -1 and +1) between the filter's predictions and the expected answers. A coefficient of $1$ corresponds to an always correct filter, a coefficient of $-1$ to an always incorrect one, and a coefficient of $0$ means the filter produces answers that are statistically independent from the correct ones. 
+
+Figure~\ref{fig:strangess} measures $\phi$ as a function of $w$, for different stream sizes $N$. A visible peak in $\phi$ can be found around $w\approx N$.   
+
+\begin{figure*}[!ht]
+	\centering
+	\input{graphs/stream_size.tex}
+	\caption{Pearson $\phi$ for queuing SQF ($L = 10$, $M = 10^5$, $|\Gamma| = 2^16$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
+\end{figure*}
+
+As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
+
+It is also possible to run simulations for different alphabet sizes $\Gamma$, which shows that the peak's position increases with $|\Gamma|$, although the relationship is not obvious to quantify.
 
 \end{document}
