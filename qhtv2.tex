@@ -371,16 +371,14 @@ This concludes the proof.
 \paragraph{Remark.} As previously, the effect of $w < cL$ is negiglible for all practical purposes and Theorem~\ref{thm:queue-pfn} is considered a good approximation in that regime. 
 
 \subsection{FNR and FPR}
-
-As stated before, the probabilty of false positive and false negative are not the usual measurement made when benchmarking filters. Rather, one prefers to use false positive (and negative) \emph{rates}, defined as the average of the false positive (and negative) probabilities encountered so far.
-
-From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR. For the sake of simplicity, we only give the FPR and FNR of a queueing filter $\mathcal Q$ after $m = cn$ insertions, where $n$ is a positive integer.
+From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR when $m = cn$ for $n$ a positive integer.
 \begin{theorem}
-	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w \approx cL$, we have
-	$$\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})$$
+	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
+	\begin{equation}
+	\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell}).
+	\end{equation}
 \end{theorem}
 \begin{proof}
-
 
 \begin{align*}
 	\FPR_{\mathcal Q, cn}^w
@@ -390,15 +388,13 @@ From the above expressions we can derive relatively compact explicit formulas fo
 	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
 	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
 \end{align*}
-
 \end{proof}
 
 \begin{theorem}
-	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w \approx cL$, we have
-	
-	$$\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell$$
-	
-	with the $u_\eta= p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$.
+	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
+	\begin{equation}
+	\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell.
+	\end{equation}
 \end{theorem}
 
 \begin{proof}
@@ -410,9 +406,8 @@ From the above expressions we can derive relatively compact explicit formulas fo
 	& = \frac1c \sum_{\ell = 0}^{c-1} u_c^{L-1} u_{\ell} 
 	 = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
 \end{align*}
-
 \end{proof}
-
+As for the probabilities, the expressions derived above for the FNR and FNR are valid to first order in $(w - cL)/|\Gamma|$, i.e. they are good approximations even when $w \approx cL$. 
 
 \section{Optimising queuing filters}
 \todo[À vérifier je suis pas convaincu encore]
@@ -481,17 +476,13 @@ Note, as highlighted in the proof, that this bound is \emph{not tight}: better b
 
 The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarizes in Figure~\ref{fig:graph_n}. It appears that the two most efficient filters (in terms of saturation rate) are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
 
-\subsection{DDF Comparison}
-A filter comparison was already made in \cite{10.1145/3297280.3297335}. Taking the same filters parameters, created another benchmark, studying the resistance of each DDF to saturation. We added the lower bound on the error rate. More details about the experiments are given in Section~\ref{sub:saturation}. We observe in Figure~\ref{fig:graph_n} that the most efficient DDF is the QHT \cite{10.1145/3297280.3297335}.
-
-%However, as noted in Section~\ref{sub:related}, A2 filters can be considered as a queuing filter, with $L=2$ and Bloom filters as subfilters. Hence, as it is not interesting to put a queueing filter inside a queueing filter, we will rather use QHT for practical benchmarking of the queueing filter.
-
 As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
 
-%In the experiments we use QHT for practical benchmarking of the queueing filter.
-
+In the experiments we use QHT for the benchmarking of the queueing construction.
 
 \subsection{Parameter Tuning}
+\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
+
 The parameters of a queueing filter are: the parameters of the subfilter, the number $L$ of subfilters and the number $c$ of insertions per subfilter. 
 
 However, the goal here is not to modify the parameters of the underlying subfilter, but rather to tune the queueing filter so the subfilter can perform as well as possible. Hence, the queueing filter's parameters are only $c$ and $L$.
@@ -503,23 +494,23 @@ As such, an optimal parameter tuning would be to set $L$ so that the error rate 
 We have observed in Section~\ref{sub:fnr} that the FN is positively correlated with
 $\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated with the same value. As such, decreasing the probability of false positive leads to an increase in the probability of false negatives. 
 
-\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
 
 %Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
 
 
 \section{Experiments and Benchmarks}
-In this section, we present the different experiments we made. The code is accessible online and will be disclosed after peer review.
+This section provides details and additional information on the benchmarking experiments run to validate the above analysis. All code is accessible online and will be disclosed after peer review.
 
-We first present a comparison of the resistance of various DDFs against saturation, without any sliding window. This comparison helps us to choose the best subfilter.
-
-Then, we design an experiment in which we compare the error rates of a QHT and a queuing filter, using the same QHT as a subfilter.
-
-We remind the reader that for small sliding windows compared to the memory size, optimal or nearly optimal solutions can be implemented, as discussed in Section~\ref{sub:opt_solutions}. However, since we must evaluate the number of duplicates in the streams we use, we cannot benchmark our filter in real-life situations, as doing so would require way too much memory for keeping track of the duplicates.
+Our benchmarks cover two aspects: 
+\begin{enumerate}
+\item A measure of DDFs' saturation rate, in the original DDP setting (i.e. without a sliding window), which is used to choose a subfilter design;
+\item A measure of the effect of queuing on error rates, in the sliding window DDP setting. Namely, we compate QHT and a queuing QHT.
+\end{enumerate}
+An important note is that when the sliding window is small compared to the filter's memory size, optimal or nearly optimal solutions can be implemented (see Section~\ref{sub:opt_solutions}). This is practical for smaller values because we can measure exactly a filter's response compared to the \enquote{ground truth}. However, this is no longer possible for very large parameters as it would require too much memory for keeping track of the duplicates.
 
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
-In this section, we compare the resistance of various filters to saturation. From the streaming filters we found in the literature, we only considered the filters not designed for operating on a sliding window, and parameters as \cite{10.1145/3297280.3297335}, namely:
-
+We evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and agree with \cite{10.1145/3297280.3297335}, namely:
+%
 \begin{itemize}
 	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
 	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
@@ -528,10 +519,10 @@ In this section, we compare the resistance of various filters to saturation. Fro
 	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
+%
+These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements. Results are plotted in Figure~\ref{fig:graph_n}.
 
-We used two streams. The first one was a real stream, collected from \cite{10.1145/3297280.3297335}, which is a web crawler's log, of alphabet size unknown, with about 10\% duplicates on the longest stream, consisting of 150 000 000 elements. The second one was a stream of random elements, taken from an alphabet of $2^{26}$ elements, with around 8\% duplicates on the longest stream. Results are plotted in Figure~\ref{fig:graph_n}.
-
-\begin{figure*}
+\begin{figure*}[!ht]
 	\begin{tikzpicture}
 	\begin{groupplot}[
 	group style = {
@@ -543,8 +534,8 @@ We used two streams. The first one was a real stream, collected from \cite{10.11
 	width = 0.4\textwidth,
 	height = 0.27\textwidth,
 	]
-	\input{er_n_real}
 	\input{er_n_artificial}
+	\input{er_n_real}
 	%\input{10e6_sum_zipf}
 	\end{groupplot}
     \path (top)--(bot) coordinate[midway] (group center);
@@ -556,25 +547,14 @@ We used two streams. The first one was a real stream, collected from \cite{10.11
 	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
 \end{figure*}
 
-We observe that the best filters are, in order, QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
+The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
 
-\subsection{Benchmarking Various Queuing Filters}
-Now that DDF are compared on a full stream, we observe how each of them behave when they act as a subfilter in our queueing scheme. The goal is to empirically prove the assumption made in Section~\ref{sub:optimal_ddf}, stating that the best (error-wise) DDF operating on a full stream leads to the best (error-wise) queueing filter operating on a sliding window. From Figure~\ref{fig:graph_n}, we observe that the best DDF for DDP on a full stream are, in order, QHT, SQF, Cuckoo, SQF.
+\subsection{Benchmarking Queuing Filters}
+We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sub:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queueing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queueing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
-For this, we reused the same filters are previously mentioned.
-%\begin{itemize}
-%	\item QHT subfilter \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint. 
-%	\item Cuckoo Filter \cite{Fan14}, adapted for streaming as recommanded by \cite{10.1145/3297280.3297335}, cells containing 1 element of 3 bits each
-%	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
-%	\item SBF \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
-%	\item A2
-%\end{itemize}
+A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer. This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
-We used a random stream of $10,000,000$ elements uniformly selected from an alphabet of size $|\Gamma| = 2^{18}$, a memory size $M=100,000$ bits, a sliding window of size $w = 10,000$. The error rates (defined as the sum of $\FNR^w$ and $\FPR^w$) are displayed in Figure~\ref{tab:comparing_queueing}. We see that in all cases, the QHT subfilter performs better or almost as well than any other subfilter, hence validating the heuristic assumption.
-
-A very interesting observation is that, for $N$ the length of the stream, when $w \approx N/L$ we observe a decrease in the error rates. While being interesting on the theoretical side, in practice we usually assume that the stream is infinite, so we cannot rely on this fact for designing our filter. As such, the study of the phenomenon is left for future work.
-
-\begin{figure}
+\begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
 	\caption{Error rate (times 100) of various queueing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{18}$.}\label{tab:comparing_queueing}
 \end{figure}
@@ -588,8 +568,6 @@ A very interesting observation is that, for $N$ the length of the stream, when $
 %	\end{tabular}
 %	\caption{Error rate (times 100) of various queueing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{16}$. For each sliding window, the best performance is written in bold.}\label{tab:comparing_queueing}
 %\end{table}
-
-\todo
 
 \subsection{Benchmark of the influence of $L$ parameter}\label{sub:L_bench}
 In this section, we make experiments on the influence of $L$ on the error rate of the queueing filter. 
