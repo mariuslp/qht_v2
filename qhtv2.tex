@@ -481,15 +481,9 @@ Note, as highlighted in the proof, that this bound is \emph{not tight}: better b
 
 The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarizes in Figure~\ref{fig:graph_n}. It appears that the two most efficient filters (in terms of saturation rate) are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
 
-\subsection{DDF Comparison}
-A filter comparison was already made in \cite{10.1145/3297280.3297335}. Taking the same filters parameters, created another benchmark, studying the resistance of each DDF to saturation. We added the lower bound on the error rate. More details about the experiments are given in Section~\ref{sub:saturation}. We observe in Figure~\ref{fig:graph_n} that the most efficient DDF is the QHT \cite{10.1145/3297280.3297335}.
-
-%However, as noted in Section~\ref{sub:related}, A2 filters can be considered as a queuing filter, with $L=2$ and Bloom filters as subfilters. Hence, as it is not interesting to put a queueing filter inside a queueing filter, we will rather use QHT for practical benchmarking of the queueing filter.
-
 As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
 
-%In the experiments we use QHT for practical benchmarking of the queueing filter.
-
+In the experiments we use QHT for the benchmarking of the queueing construction.
 
 \subsection{Parameter Tuning}
 \todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
