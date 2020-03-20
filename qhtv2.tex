@@ -581,7 +581,9 @@ In this section, we compare the efficiency of QHT and QHT-queueing filter. For t
 
 \section{Adversarial Resistance}
 
-As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems. \todo[source, sans doute le papier sur les adversarial bloom filters?]. 
+As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems.
+
+In order to create a realistic adversary model, we assume like in \cite{DBLP:journals/corr/abs-1709-08920} that the adversary does not have access to the internal memory representation of the filter. Nonetheless, after every insertion she knows whether the inserted element was detected as a duplicate or not. 
 
 We first recall the definition of an adversarial game, adapted to our context.
 \begin{definition}
@@ -632,7 +634,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false negative attacks, then $\mathcal A$ can win the adversarial game on the sliding window $w$ with probability at least $p^L$.
 	
 	Furthermore, for $q$ the lower bound on the probability of false positive $\FP_{\mathcal F,c}$ for a given stream, if $w \leq (L-1)c$ then $\mathcal Q$ is $(\min(1 - q, p)^{L-1}p, w)$-resistant to false negative attacks on the sliding window $w$.
-	On the other hand if $w > (L-1)c$ then $\mathcal Q$ is  $(\min(1 - q, p)^{L}, w)$-resistant to false negative attacks on the sliding window $w$.
+	On the other hand if $w > (L-1)c$ then $\mathcal Q$ is  $(\max(1 - q, p)^{L}, w)$-resistant to false negative attacks on the sliding window $w$.
 \end{theorem}
 
 \begin{proof}
@@ -653,7 +655,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 	
 	Now, let us consider the case when $w > (L-1)c$. We have already introduce the element $e^\star$ in the last $w$ elements, and we want to insert it again. It is possible, for the adversary, to create the following stream $E = (e_1, e_2, \dotsc, e_{c-1}, e^\star, e_{c+1}, \dotsc, e_{Lc}, e_{Lc + 1})$, and to insert $e^\star$ afterwards.
 	
-	When $e_{Lc+1}$ is inserted, all elements $(e_1, \dotsc, e_{c-1}, e^\star)$ are dropped as the oldest subfilter is popped. Hence, in this context $e^\star$ is not in any subfilter anymore, so by adapting the previous analysis, $\mathcal A$ can get a false negative with probability at most $\min(1 - q, p)^{L}$.
+	When $e_{Lc+1}$ is inserted, all elements $(e_1, \dotsc, e_{c-1}, e^\star)$ are dropped as the oldest subfilter is popped. Hence, in this context $e^\star$ is not in any subfilter anymore, so by adapting the previous analysis, $\mathcal A$ can get a false negative with probability at most $\max(1 - q, p)^{L}$.
 \end{proof}
 %% Acknowledgements 
 %\begin{acks} \end{acks}
