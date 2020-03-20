@@ -375,7 +375,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 \begin{theorem}
 	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
 	\begin{equation}
-	\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
+	\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell}).
 	\end{equation}
 \end{theorem}
 \begin{proof}
@@ -393,7 +393,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 \begin{theorem}
 	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
 	\begin{equation}
-	\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
+	\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell.
 	\end{equation}
 \end{theorem}
 
