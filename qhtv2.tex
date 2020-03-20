@@ -60,9 +60,9 @@
 
 We begin with the following, ideal problem: 
 \begin{definition}[Duplicate detection problem, DDP] Given a stream $E_n = (e_1, e_2, \dotsc, e_n)$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$.\footnote{
-	We do not consider here \emph{fuzzy} detection approaches\cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient} that study situations where $e^\star$ belongs to $E_n$ when there exists a \enquote{similar enough} element in the stream.
+	We do not consider here \emph{fuzzy} detection approaches \cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient} that study situations where $e^\star$ belongs to $E_n$ when there exists a \enquote{similar enough} element in the stream.
 }
-	At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n | (e^\star)$ where | denotes the concatenation . 
+	At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n \mid e^\star$ where $\mid$ denotes concatenation. 
 \end{definition}
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 
@@ -418,7 +418,7 @@ As for the probabilities, the expressions derived above for the FNR and FNR are 
 \begin{proof}
 As a matter of fact, on average the queueing filter consists of $L-1$ subfilters with $c$ insertions, and one subfilter with $\frac c2$ insertions. As such, we can say that the queueing filter is a representation of the last $(c-\frac12) L$ last elements. 
 
-Let us consider a duplicate $e^\star \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as Theorem~\ref{thm:queue-pfn}'s proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
+Let us consider $e^\star \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as Theorem~\ref{thm:queue-pfn}'s proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
 
 Hence, the lower $L$ is, the higher the probability of false negative will be.
 
@@ -436,6 +436,7 @@ Indeed, a simple symmetry argument shows that a heterogenous selection of subfil
 It remains to decide which subfilter construction to choose. 
 
 \subsection{Subfilter selection}
+\label{sec:optimal_ddf}
 When comparing different DDFs, one interesting metric in our context is how fast
 such filters saturate: indeed, in the original DDP setting, all filters eventually saturate \cite{10.1145/3297280.3297335}. 
 
@@ -456,7 +457,7 @@ such filters saturate: indeed, in the original DDP setting, all filters eventual
 	
 	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
 	
-	On the other hand, a duplicate element $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
+	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
 	\begin{align*}
 	\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
 	& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
@@ -499,6 +500,7 @@ $\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated w
 
 
 \section{Experiments and Benchmarks}
+
 This section provides details and additional information on the benchmarking experiments run to validate the above analysis. All code is accessible online and will be disclosed after peer review.
 
 Our benchmarks cover two aspects: 
@@ -550,7 +552,7 @@ These filters are run against a stream of uniformly sampled elements from an alp
 The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
 
 \subsection{Benchmarking Queuing Filters}
-We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sub:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queueing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queueing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
+We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queueing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queueing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
 A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer. This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
@@ -610,7 +612,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 	
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false positive attacks and $cL \leq w$, then $\mathcal Q$ is $(1-(1-p)^L, w)$-resistant to adversarial false positive attacks on a sliding window of size $w$.
 	
-	If $cL > w$, the adversary has a probability of success of at least $(1-(1-p)^L$.
+	If $cL > w$, the adversary has a probability of success of at least $1-(1-p)^L$.
 \end{theorem}
 
 \begin{proof}
@@ -636,7 +638,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 \begin{proof}
 	Let us first prove that a PPT adversary $\mathcal A$ can win the game with probability at least $p^L$.
 	For this, let us consider the adversarial game against the subfilter $\mathcal F$: after $c$ insertions from an aversarial stream $E_c$, $\mathcal A$ choses a duplicate $e^\star$ which will be a false negative with proability $p$.
-	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c | E_c | \dotsc | E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a probability of success for $\mathcal A$ of $p^L$.
+	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c \mid E_c \mid \cdots \mid E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a probability of success for $\mathcal A$ of $p^L$.
 	
 	Now, Let us prove the case where $w\leq (L-1)c$. In this case, at any time, $\mathcal Q$ remembers all elements from inside the sliding window. As we have seen in the previous example, the probability of success of $\mathcal A$ is strictly increasing with the probability of each subfilter to answer $\UNSEEN$. The probability of a subfilter to answer $\UNSEEN$ is:
 	
