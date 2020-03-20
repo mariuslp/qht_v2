@@ -87,8 +87,8 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 500000 	90.79 	5.03 	95.82 	4.18 	6.65 	83.67
 \end{filecontents*}
 
-\begin{tikzpicture}[scale=0.7]
-\begin{semilogxaxis}[legend pos = outer north east, title=Errors for a stream of size $10^7$]
+\begin{tikzpicture}
+\begin{semilogxaxis}[width=0.35\textwidth, legend pos = outer north east, title=Errors for a stream of size $10^7$]
   	\addplot[color=red, mark=+] table[x=w,y=Error] {qht.dat};
 \addlegendentry{Queueing QHT}
   	\addplot[color=blue, mark=x] table[x=w,y=Error] {sqf.dat};
