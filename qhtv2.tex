@@ -461,6 +461,8 @@ Remarkably, as noted in Section~\ref{sub:related}, A2 filters are a primitive fo
 In the experiments we use QHT for practical benchmarking of the queueing filter.
 
 \subsection{Parameter Tuning}
+\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
+
 The parameters of a queueing filter are: the parameters of the subfilter, the number $L$ of subfilters and the number $c$ of insertions per subfilter. 
 
 However, the goal here is not to modify the parameters of the underlying subfilter, but rather to tune the queueing filter so the subfilter can perform as well as possible. Hence, the queueing filter's parameters are only $c$ and $L$.
@@ -472,19 +474,19 @@ As such, an optimal parameter tuning would be to set $L$ so that the error rate 
 We have observed in Section~\ref{sub:fnr} that the FN is positively correlated with
 $\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated with the same value. As such, decreasing the probability of false positive leads to an increase in the probability of false negatives. 
 
-\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
 
 %Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
 
 
 \section{Experiments and Benchmarks}
-In this section, we present the different experiments we made. The code is accessible online and will be disclosed after peer review.
+This section provides details and additional information on the benchmarking experiments run to validate the above analysis. All code is accessible online and will be disclosed after peer review.
 
-We first present a comparison of the resistance of various DDFs against saturation, without any sliding window. This comparison helps us to choose the best subfilter.
-
-Then, we design an experiment in which we compare the error rates of a QHT and a queuing filter, using the same QHT as a subfilter.
-
-We remind the reader that for small sliding windows compared to the memory size, optimal or nearly optimal solutions can be implemented, as discussed in Section~\ref{sub:opt_solutions}. However, since we must evaluate the number of duplicates in the streams we use, we cannot benchmark our filter in real-life situations, as doing so would require way too much memory for keeping track of the duplicates.
+Our benchmarks cover two aspects: 
+\begin{enumerate}
+\item A measure of DDFs' saturation rate, in the original DDP setting (i.e. without a sliding window), which is used to choose a subfilter design;
+\item A measure of the effect of queuing on error rates, in the sliding window DDP setting. Namely, we compate QHT and a queuing QHT.
+\end{enumerate}
+An important note is that when the sliding window is small compared to the filter's memory size, optimal or nearly optimal solutions can be implemented (see Section~\ref{sub:opt_solutions}). This is practical for smaller values because we can measure exactly a filter's response compared to the \enquote{ground truth}. However, this is no longer possible for very large parameters as it would require too much memory for keeping track of the duplicates.
 
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
 In this section, we compare the resistance of various filters to saturation. From the streaming filters we found in the literature, we only considered the filters not designed for operating on a sliding window, and parameters as \cite{10.1145/3297280.3297335}, namely:
