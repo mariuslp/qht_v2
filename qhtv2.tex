@@ -371,16 +371,14 @@ This concludes the proof.
 \paragraph{Remark.} As previously, the effect of $w < cL$ is negiglible for all practical purposes and Theorem~\ref{thm:queue-pfn} is considered a good approximation in that regime. 
 
 \subsection{FNR and FPR}
-
-As stated before, the probabilty of false positive and false negative are not the usual measurement made when benchmarking filters. Rather, one prefers to use false positive (and negative) \emph{rates}, defined as the average of the false positive (and negative) probabilities encountered so far.
-
-From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR. For the sake of simplicity, we only give the FPR and FNR of a queueing filter $\mathcal Q$ after $m = cn$ insertions, where $n$ is a positive integer.
+From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR when $m = cn$ for $n$ a positive integer.
 \begin{theorem}
-	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w \approx cL$, we have
-	$$\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})$$
+	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
+	\begin{equation}
+	\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
+	\end{equation}
 \end{theorem}
 \begin{proof}
-
 
 \begin{align*}
 	\FPR_{\mathcal Q, cn}^w
@@ -390,15 +388,13 @@ From the above expressions we can derive relatively compact explicit formulas fo
 	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
 	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
 \end{align*}
-
 \end{proof}
 
 \begin{theorem}
-	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w \approx cL$, we have
-	
-	$$\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell$$
-	
-	with the $u_\eta= p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$.
+	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
+	\begin{equation}
+	\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
+	\end{equation}
 \end{theorem}
 
 \begin{proof}
@@ -410,9 +406,8 @@ From the above expressions we can derive relatively compact explicit formulas fo
 	& = \frac1c \sum_{\ell = 0}^{c-1} u_c^{L-1} u_{\ell} 
 	 = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
 \end{align*}
-
 \end{proof}
-
+As for the probabilities, the expressions derived above for the FNR and FNR are valid to first order in $(w - cL)/|\Gamma|$, i.e. they are good approximations even when $w \approx cL$. 
 
 \section{Optimising queuing filters}
 \todo[À vérifier je suis pas convaincu encore]
