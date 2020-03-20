@@ -376,7 +376,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 \begin{theorem}
 	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
 	\begin{equation}
-	\FPR_{\mathcal Q, cn}^w = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell}).
+	\FPR_{\mathcal Q, cn}^w = 1 -  \frac{(1 - \FP_{\mathcal F, c})^{L-1}}{c}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell}).
 	\end{equation}
 \end{theorem}
 \begin{proof}
@@ -387,7 +387,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 	 = \frac{1}{cn} \sum_{k=1}^{n} \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, k + \ell}^w 
 	 = \frac1c \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, \ell}^w \\
 	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
-	& = 1 -  (1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
+	& = 1 - \frac1c(1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
 \end{align*}
 \end{proof}
 
@@ -483,23 +483,17 @@ As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queu
 
 In the experiments we use QHT for the benchmarking of the queueing construction.
 
-\subsection{Parameter Tuning}
-\todo[FAUX, peut etre log ? However, practical tests show (see Section~\ref{sub:L_bench}) that setting $L = \sqrt w$ leads to optimal results.]
-
-The parameters of a queueing filter are: the parameters of the subfilter, the number $L$ of subfilters and the number $c$ of insertions per subfilter. 
-
-However, the goal here is not to modify the parameters of the underlying subfilter, but rather to tune the queueing filter so the subfilter can perform as well as possible. Hence, the queueing filter's parameters are only $c$ and $L$.
-
-Furthermore, we have the relation $cL \approx w$, so there is only one free parameter. 
-
-As such, an optimal parameter tuning would be to set $L$ so that the error rate (defined as the sum of the FPR and FNR) would be minimal. Nonetheless, given the complicated nature of the FPR and FNR formulae, deriving an optimal $L$ is out of reach.
-
-We have observed in Section~\ref{sub:fnr} that the FN is positively correlated with
-$\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated with the same value. As such, decreasing the probability of false positive leads to an increase in the probability of false negatives. 
-
-
-%Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
-
+\subsection{How many subfilters?}
+The parameter $L$ determines how many subfilters appear in the queueing construction. Summing up the false positive and false negative rates, we have a total error rate 
+\begin{equation}
+	\operatorname{ER}_{\mathcal Q, cn}^{w}
+	= 1 - \alpha \beta^{L-1} + \alpha' \beta'^{L-1}
+\end{equation}
+where $\beta = 1 - \FP_{\mathcal F, c}$, $\beta' = u_c$, 
+$\alpha = \frac1c \sum_{\ell = 0}^{c-1}1 - \FP_{\mathcal F, \ell}$ and $\alpha' = \frac1c \sum_{\ell = 0}^{c-1} u_\ell$ only depend on $c$ and the choice of subfilter type $\mathcal F$. Differentiating with respect to $L$ and equating to zero gives an optimum
+\begin{equation*}
+	L = -\log((\alpha \beta' \log(\beta))/(\alpha'\beta \log(\beta')))/\log(\beta/\beta').
+\end{equation*} 
 
 \section{Experiments and Benchmarks}\label{sec:bench}
 
@@ -556,7 +550,7 @@ The best results are given by the following filters, in order: QHT, SQF, Cuckoo 
 \subsection{Benchmarking Queuing Filters}
 We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queueing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queueing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
-A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer. This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
+A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer (see Appendix~\ref{app:finite}). This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
 \begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
@@ -575,7 +569,6 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 
 \subsection{How many subfilters?}\label{sub:L_bench}
 \todo[À faire]
-In this section, we make experiments on the influence of $L$ on the error rate of the queueing filter. 
 
 \subsection{Comparison of QHT and QHT-Queueing Filter}
 \todo[À faire]
@@ -668,7 +661,9 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 %% Appendix
 \appendix
 
-\section{Effects of the finite simulation}
+\section{Effects of the simulation's finiteness}
+\label{app:finite}
+
 Theoretical results about the queuing construction apply in principe to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artifacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
 
 To accentuate this effect we use the Pearson $\phi$ coefficient that measures statistical correlation (between -1 and +1) between the filter's predictions and the expected answers. A coefficient of $1$ corresponds to an always correct filter, a coefficient of $-1$ to an always incorrect one, and a coefficient of $0$ means the filter produces answers that are statistically independent from the correct ones. 
@@ -678,7 +673,7 @@ Figure~\ref{fig:strangess} measures $\phi$ as a function of $w$, for different s
 \begin{figure*}[!ht]
 	\centering
 	\input{graphs/stream_size.tex}
-	\caption{Pearson $\phi$ for queuing SQF ($L = 10$, $M = 10^5$, $|\Gamma| = 2^16$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
+	\caption{Pearson $\phi$ for queuing SQF ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
 \end{figure*}
 
 As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
