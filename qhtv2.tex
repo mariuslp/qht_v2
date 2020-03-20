@@ -59,10 +59,10 @@
 \subsection{Motivation}
 
 We begin with the following, ideal problem: 
-\begin{definition}[Duplicate detection problem, DDP] Given a stream $E_n = \{e_1, e_2, \dotsc, e_n\}$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$.\footnote{
+\begin{definition}[Duplicate detection problem, DDP] Given a stream $E_n = (e_1, e_2, \dotsc, e_n)$ and a \enquote{new} item $e^\star$, find whether $e^\star \in E_n$.\footnote{
 	We do not consider here \emph{fuzzy} detection approaches\cite{10.5555/1287369.1287420,1410199,10.1109/ICDE.2011.5767865,10.1109/ICDE.2012.20,Monge97anefficient} that study situations where $e^\star$ belongs to $E_n$ when there exists a \enquote{similar enough} element in the stream.
 }
-	At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n \cup \{e^\star\}$. 
+	At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n | (e^\star)$ where | denotes the concatenation . 
 \end{definition}
 Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 
@@ -94,10 +94,10 @@ In this work, we provide a full abstraction of the mechanism, allowing us to use
 
 \section{Duplicate Detection and Filter Saturation}
 \subsection{Notations and Initial Problem Statement}
-Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly infinite) set $E = \{e_1, e_2, \dotsc\}$, with each $e_i \in \Gamma$.
+Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly infinite) set $E = (e_1, e_2, \dotsc)$, with each $e_i \in \Gamma$.
 
 \begin{definition}[Duplicate and unseen element]
-Let $E = \{e_1, e_2, \dotsc\}$ be a stream over $\Gamma$. Some element $e_j \in E$ is called a \emph{duplicate} if and only if there exists $i < j$ such that $e_i = e_j$. In that case we write $e_j \dup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notdup E$.
+Let $E = (e_1, e_2, \dotsc)$ be a stream over $\Gamma$. Some element $e_j \in E$ is called a \emph{duplicate} if and only if there exists $i < j$ such that $e_i = e_j$. In that case we write $e_j \dup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notdup E$.
 \end{definition}
 
 \begin{definition}[Duplicate detection filter]
@@ -117,14 +117,14 @@ We will usually consider the situations where the available memory is too small 
 \end{definition}
 
 \begin{definition}[False positive rate, false negative rate]
-	Let $E$ be a stream, $\mathcal F$ be a filter. The \emph{false positive rate} (resp. \emph{false negative rate}) of $\mathcal F$ over the first $i < n$ elements, denoted $\FPR_i$ (resp. $\FNR_i$), is defined as the ratio of false positives divided over the number of unseen elements in $\{e_1, \dotsc, e_i\}\subset E$ (resp. the ratio of false negative divided by the number of duplicate elements in that subset).
+	Let $E$ be a stream, $\mathcal F$ be a filter. The \emph{false positive rate} (resp. \emph{false negative rate}) of $\mathcal F$ over the first $i < n$ elements, denoted $\FPR_i$ (resp. $\FNR_i$), is defined as the ratio of false positives divided over the number of unseen elements in $(e_1, \dotsc, e_i)\subset E$ (resp. the ratio of false negative divided by the number of duplicate elements in that subset).
 \end{definition}
 
 However, it is more practical to work with another value, namely, the probability that after $m$ insertions, the element $e^\star$ is a false positive (resp. false negative). 
 
 \begin{definition}[Probability of false positive, of false negative]
 	\label{def:pfp-pfn}
-	Let $E = \{e_1, \dotsc\}$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
+	Let $E = (e_1, \dotsc)$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
 \end{definition}
 
 One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^n \FP_i$, and similarly for $\FNR_n$.
@@ -142,13 +142,13 @@ In other terms, any DDF is asymptotically as good as a random guess:
 One way out of this situation is to lower our expectations and work on a sliding window:
 
 \begin{definition}[Sliding window DDP]
-	Given a stream $E_n$ of fixed size $w$, with $E_n = \{e_{n-w+1}, \dotsc, e_n\}$ and an item $e^\star$, find whether $e^\star \in E_n$.
+	Given a stream $E_n$ of fixed size $w$, with $E_n = (e_{n-w+1}, \dotsc, e_n)$ and an item $e^\star$, find whether $e^\star \in E_n$.
 \end{definition} 
 
 We therefore introduce new definitions suited to that setting:
 
 \begin{definition}[Duplicate element, unseen element over a sliding window]
-	Let $E = \{e_1, e_2, \dotsc\}$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \wdup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notwdup E$.
+	Let $E = (e_1, e_2, \dotsc)$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \wdup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notwdup E$.
 \end{definition}
 
 \begin{definition}[False positive, false negative over a sliding window]
@@ -239,7 +239,7 @@ As such, we can consider that each subfilter operates on a sub-sliding window of
 
 \begin{figure}
 	\input{fig/queuef.tex}
-	\caption{Architecture of the queuing filter. The filter is composed of $L$ subfilters $\mathcal F$, each containing up to $c$ elements. Once the newest subfilter has inserted $c$ elements in its structure, the oldest one is expired. As such, it is dropped and a new one is created and put under population at the beginning of the queue. In this example, the sub-sliding window of $\mathcal F_1$ is $\{e_{m-2}, e_{m-3}, e_{m-4}\}$.} \label{fig:scheme}
+	\caption{Architecture of the queuing filter. The filter is composed of $L$ subfilters $\mathcal F$, each containing up to $c$ elements. Once the newest subfilter has inserted $c$ elements in its structure, the oldest one is expired. As such, it is dropped and a new one is created and put under population at the beginning of the queue. In this example, the sub-sliding window of $\mathcal F_1$ is $(e_{m-2}, e_{m-3}, e_{m-4})$.} \label{fig:scheme}
 \end{figure}
 
 \paragraph{Insertion and lookup.}
@@ -301,7 +301,7 @@ capacity $c$ (which means that the last subfilter is dropped after $c$ insertion
 	\label{subsub:number_elements}
 	By definition, after $c$ insertions the last subfilter is dropped.
 Information-theoretically, this means that all the information related to the elements inserted in that subfilter has been lost, and there are $c$ such elements by design. 
-Therefore, in the steady-state regime, the queuing filter holds information about at least $c(L-1)$  elements (immediately after deleting the last subfilter) and at most $cL - 1$ elements (immediately before this deletion). 
+Therefore, in the steady-state regime, the queuing filter holds information about at least $c(L-1)$  elements (immediately after deleting the last subfilter) and at most $cL$ elements (immediately before this deletion). 
 
 As a result, if $w < cL$, the queuing filter can hold information about \emph{more than $w$ elements}.
 
@@ -319,7 +319,7 @@ As a result, if $w < cL$, the queuing filter can hold information about \emph{mo
 \end{theorem}
 
 \begin{proof}
-	Let $E = \{e_1, \dotsc, e_m, \dotsc\}$ be a stream and $e^\star \notwdup E$. 
+	Let $E = (e_1, \dotsc, e_m, \dotsc)$ be a stream and $e^\star \notwdup E$. 
 	
 	Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is \emph{not} a false positive when all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN, i.e., when $e^\star$ is not a false positive for each subfilter.
 	
@@ -529,7 +529,7 @@ In this section, we compare the resistance of various filters to saturation. Fro
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
 
-The stream was a stream of uniform random elements, taken from an alphabet of $2^{26}$ elements, and amounts for about 8\% duplicates on the 150 000 000 elements in the longest stream used. Results are plotted in Figure~\ref{fig:graph_n}.
+We used two streams. The first one was a real stream, collected from \cite{10.1145/3297280.3297335}, which is a web crawler's log, of alphabet size unknown, with about 10\% duplicates on the longest stream, consisting of 150 000 000 elements. The second one was a stream of random elements, taken from an alphabet of $2^{26}$ elements, with around 8\% duplicates on the longest stream. Results are plotted in Figure~\ref{fig:graph_n}.
 
 \begin{figure*}
 	\begin{tikzpicture}
@@ -593,13 +593,95 @@ A very interesting observation is that, for $N$ the length of the stream, when $
 
 \subsection{Benchmark of the influence of $L$ parameter}\label{sub:L_bench}
 In this section, we make experiments on the influence of $L$ on the error rate of the queueing filter. 
+
 \subsection{Comparison of QHT and QHT-Queueing Filter}
 In this section, we compare the efficiency of QHT and QHT-queueing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
+\todo[]
 
 
 
+\section{Adversarial Resistance}
 
-\section{Security}
+In this section, we now focus on the security on the queueing filter. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. This has practical applications in several topics of security, including cache saturation or denial of service by forcing cache misses, or by making undetected fraudulent payments. \todo[source]. 
+
+We first recall the definition of an adversarial game, adapted to our context.
+
+
+\begin{definition}
+	An adversary $\mathcal A$ feeds data to a sliding window DDF $\mathcal Q$, and for each inserted element, $\mathcal A$ knows whether $\mathcal Q$ answers $\DUPLICATE$ or $\UNSEEN$, but has not access to $\mathcal Q$'s internal state $\mathcal M$. The game has two distinct parts.
+
+\begin{itemize}
+	\item In the first part, $\mathcal A$ can feed up to $n$ elements to $\mathcal Q$ and learn $\mathcal Q$'s response for each insertion.
+	\item In the second part, $\mathcal A$ sends a unique element $e^\star$.
+\end{itemize} 
+ $\mathcal A$ wins the $n$-false positive adversarial game (resp. $n$-false negative adversarial game) if and only if $e^\star$ is a false positive (resp. a false negative).
+ 
+ \end{definition}
+ 
+This adversarial game can be trivially adapted for a false positive (resp. false negative) adversarial game over a sliding window of size $w$, hence we omit its formal definition.
+ 
+\subsection{First Approach on the Whole Sliding Window}
+We first define what an adversarial false positive resistance over a sliding window is, before giving its value for any queueing filter based on the subfilter's properties.
+
+\begin{definition}{Adversarial False Positive Resistance}
+	Let $\mathcal F$ be a filter, let $E$ be a stream. We say that $\mathcal F$ is $(p, n)$-resistant to adversarial false positives if no polynomial-time probabilistic (PPT) adversary $\mathcal A$ can win the $n-$false positive adversarial game with probability more than $p$.  
+\end{definition}
+
+Note that if $\mathcal F$ is $(p,n)$-resistant, it is as well $(p, m)$-resistant for any $m < n$.
+
+This definition can be trivially adapted for false negative resistance, and for resistance over a sliding window.
+
+\begin{theorem}
+	Let $\mathcal Q$ be a filter of $L$ subfilters $\mathcal F_i$, with $c$ insertions maximum per subfilter, let $E$ be a stream, let $w$ be a sliding window size. 
+	
+	If $\mathcal F$ is $(p, c)$-resistant to adversarial false positive attacks and $cL \leq w$, then $\mathcal Q$ is $(1-(1-p)^L, w)$-resistant to adversarial false positive attacks on a sliding window of size $w$.
+	
+	If $cL > w$, the adversary has a probability of success of at least $(1-(1-p)^L$.
+\end{theorem}
+
+\begin{proof}
+	Let us first assume that $cL \leq w$. This implies that information-theory wise, the elements remembered by each subfilter belong to the sliding window.
+	
+	The probability of false positive for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$. As we see, the probability of false positive in $\mathcal Q$ over the sliding window $w$ is strictly increasing with the probability of false positive in any subfilter $\mathcal F_i$. Hence, the optimal solution is to maximise the probability of false positive in each subfilter $\mathcal F_i$, which by hypothesis is bounded above by $p$ after $c$ insertions.
+	
+	On the other hand, if $cL > w$, it means that the oldest filter remembers elements that do not belong to the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
+	
+	After $w$ insertions, it is quite likely that the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ probability of success.
+	
+	Note that if, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the default policy the same reasoning as for when $cL \leq w$ still applies, hence the lower bound (which is, in this case, an equality).
+\end{proof}
+
+\subsection{Adversarial False Negative}
+
+\begin{theorem}
+	Let $\mathcal Q$ be a filter of $L$ subfilters of kind $\mathcal F$, with $c$ insertions maximum per subfilter, let $E$ be a stream, let $w$ be a sliding window size. 
+	
+	If $\mathcal F$ is $(p, c)$-resistant to adversarial false negative attacks, then $\mathcal A$ can win the adversarial game on the sliding window $w$ with probability at least $p^L$.
+	
+	Furthermore, for $q$ the lower bound on the probability of false positive $\FP_{\mathcal F,c}$ for a given stream, if $w \leq (L-1)c$ then $\mathcal Q$ is $(\min(1 - q, p)^{L-1}p, w)$-resistant to false negative attacks on the sliding window $w$.
+	On the other hand if $w > (L-1)c$ then $\mathcal Q$ is  $(\min(1 - q, p)^{L}, w)$-resistant to false negative attacks on the sliding window $w$.
+\end{theorem}
+
+\begin{proof}
+	Let us first prove that a PPT adversary $\mathcal A$ can win the game with probability at least $p^L$.
+	For this, let us consider the adversarial game against the subfilter $\mathcal F$: after $c$ insertions from an aversarial stream $E_c$, $\mathcal A$ choses a duplicate $e^\star$ which will be a false negative with proability $p$.
+	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c | E_c | \dotsc | E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a probability of success for $\mathcal A$ of $p^L$.
+	
+	Now, Let us prove the case where $w\leq (L-1)c$. In this case, at any time, $\mathcal Q$ remembers all elements from inside the sliding window. As we have seen in the previous example, the probability of success of $\mathcal A$ is strictly increasing with the probability of each subfilter to answer $\UNSEEN$. The probability of a subfilter to answer $\UNSEEN$ is:
+	
+	\begin{itemize}
+		\item $\FN'_{\mathcal F,c}$ if $e^\star$ is in the subfilter's sub-sliding window;
+		\item $1 - \FP'_{\mathcal F, c}$ if $e^\star$ is not in the subfilter's sub-sliding window
+	\end{itemize}
+	where $\FN'$ and $\FP'$ are the probabilities of false negative and positives on the adversarial stream (which may be different from a random uniform stream).
+	
+	However, since $e^\star$ is a duplicate, it is in at least one subfilter's sub-sliding window. As such, the optimal strategy for $\mathcal A$ is to maximise the probability of all subfilters to answer $\UNSEEN$.  
+	Now, $\FN'_{\mathcal F,c}$ is bounded above by $p$ and $1 - \FP'_{\mathcal F, c}$ is bounded above by $1-q$, so the best strategy is where as many filters as possible answer $\UNSEEN$ with probability $\max(p, 1-q)$, knowing that at least one filter must contain $e^\star$ and as such its probability for returning $\UNSEEN$ is at most $p$, hence the result.
+	
+	Now, let us consider the case when $w > (L-1)c$. We have already introduce the element $e^\star$ in the last $w$ elements, and we want to insert it again. It is possible, for the adversary, to create the following stream $E = (e_1, e_2, \dotsc, e_{c-1}, e^\star, e_{c+1}, \dotsc, e_{Lc}, e_{Lc + 1})$, and to insert $e^\star$ afterwards.
+	
+	When $e_{Lc+1}$ is inserted, all elements $(e_1, \dotsc, e_{c-1}, e^\star)$ are dropped as the oldest subfilter is popped. Hence, in this context $e^\star$ is not in any subfilter anymore, so by adapting the previous analysis, $\mathcal A$ can get a false negative with probability at most $\min(1 - q, p)^{L}$.
+\end{proof}
 %% Acknowledgements 
 %\begin{acks} \end{acks}
 
