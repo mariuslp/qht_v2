@@ -514,8 +514,8 @@ Our benchmarks cover two aspects:
 An important note is that when the sliding window is small compared to the filter's memory size, optimal or nearly optimal solutions can be implemented (see Section~\ref{sub:opt_solutions}). This is practical for smaller values because we can measure exactly a filter's response compared to the \enquote{ground truth}. However, this is no longer possible for very large parameters as it would require too much memory for keeping track of the duplicates.
 
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
-In this section, we compare the resistance of various filters to saturation. From the streaming filters we found in the literature, we only considered the filters not designed for operating on a sliding window, and parameters as \cite{10.1145/3297280.3297335}, namely:
-
+We evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and agree with \cite{10.1145/3297280.3297335}, namely:
+%
 \begin{itemize}
 	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
 	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
@@ -524,10 +524,10 @@ In this section, we compare the resistance of various filters to saturation. Fro
 	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
+%
+These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. As a comparison, we also run the same benchmark against a stream obtained from crawling data, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. Results are plotted in Figure~\ref{fig:graph_n}.
 
-The stream was a stream of uniform random elements, taken from an alphabet of $2^{26}$ elements, and amounts for about 8\% duplicates on the 150 000 000 elements in the longest stream used. Results are plotted in Figure~\ref{fig:graph_n}.
-
-\begin{figure*}
+\begin{figure*}[!ht]
 	\begin{tikzpicture}
 	\begin{groupplot}[
 	group style = {
@@ -539,8 +539,8 @@ The stream was a stream of uniform random elements, taken from an alphabet of $2
 	width = 0.4\textwidth,
 	height = 0.27\textwidth,
 	]
-	\input{er_n_real}
 	\input{er_n_artificial}
+	\input{er_n_real}
 	%\input{10e6_sum_zipf}
 	\end{groupplot}
     \path (top)--(bot) coordinate[midway] (group center);
