@@ -82,8 +82,9 @@ Finally, it is clear that the input distribution plays a central role regarding 
 \todo[continuer].
 
 \subsection{Contributions}
+We introduce a variant of the DDP over a sliding window, which enables the design of filters that avoids the saturation issue identified in \cite{10.1145/3297280.3297335} (Section~\ref{sec:filsat}). We provide explicit upper bounds, and corresponding constructions, for the amount of memory necessary to solve this problem (Section~\ref{sub:opt_solutions}), then introduce the \emph{queuing construction} as a generic approach to build windowed-DDP-friendly filters from existing filters (Sections~\ref{sec:queue} and \ref{sec:subfilter-select}). We analyse the queuing construction's error rates and parameters (Section~\ref{sec:optimising}), which are confirmed by benchmarks (Section~\ref{sec:bench}). Finally, we provide an analysis of the queueing construction's resistance to adversarial streams (Section~\ref{sec:adversarial}).
 
-\subsection{Related Work}\label{sub:related}
+\subsection{Related work}\label{sub:related}
 \todo[continuer]
 In \cite{10.1145/1060745.1060753}, the authors explore the behaviour of a structure very close to the counting Bloom filter in some specific sliding window context, that they call landmark- and jumping sliding windows. However, they do not deal with the problematic of a sliding window where at each new element added to the sliding window, another element is removed.
 Closer to our work, the idea of using subfilters, tossing old ones has already been explored in the A2 filter \cite{Yoo10}. However, the author only considered a small portion of the problem, as they only discussed about using two subfilters, and only Bloom Filters acting as subfilters.
@@ -129,7 +130,7 @@ However, it is more practical to work with another value, namely, the probabilit
 
 One can observe that $\FPR_n = \frac{1}{n}\sum_{i=1}^n \FP_i$, and similarly for $\FNR_n$.
 
-\subsection{Filter Saturation and Sliding Windows}
+\subsection{Filter Saturation and Sliding Windows}\label{sec:filsat}
 Unfortunately, efficient duplicate detection over an infinite stream has been identified as an unsolvable problem \cite{10.1145/3297280.3297335}. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
 
 In other terms, any DDF is asymptotically as good as a random guess:
@@ -224,7 +225,7 @@ Of these, only the A2 and b\_DBF were designed in a way immediately applicable t
 \todo[Expliquer ?]
 
 
-\section{Queuing filters}
+\section{Queuing filters}\label{sec:queue}
 In this section, we describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
 A scheme describing our structure is detailed in Figure~\ref{fig:scheme}.
 
@@ -410,6 +411,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 As for the probabilities, the expressions derived above for the FNR and FNR are valid to first order in $(w - cL)/|\Gamma|$, i.e. they are good approximations even when $w \approx cL$. 
 
 \section{Optimising queuing filters}
+\label{sec:optimising}
 \todo[À vérifier je suis pas convaincu encore]
 \begin{theorem}
 	In first approximation, a low value of $L$ for constant value $cL$ leads to a higher false negative probability for the queueing filter.
@@ -426,7 +428,7 @@ The approximations made in this proof are backed by experimental results.
 \end{proof}
 
 
-\section{Application to existing DDFs}
+\section{Queuing filters from existing DDFs}\label{sec:subfilter-select}
 Our queuing construction relies on a choice of subfilters. A first observation 
 is that we may assume that all subfilters can be instances of a single 
 DDF design (rather than a combination of different designs).
@@ -499,7 +501,7 @@ $\left(1-\FP_{\mathcal F,c}\right)^L$, however the FP is negatively correlated w
 %Hence, the (heuristic) optimal solution is to set $L = \sqrt w$.
 
 
-\section{Experiments and Benchmarks}
+\section{Experiments and Benchmarks}\label{sec:bench}
 
 This section provides details and additional information on the benchmarking experiments run to validate the above analysis. All code is accessible online and will be disclosed after peer review.
 
@@ -580,6 +582,7 @@ In this section, we make experiments on the influence of $L$ on the error rate o
 In this section, we compare the efficiency of QHT and QHT-queueing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
 
 \section{Adversarial Resistance}
+\label{sec:adversarial}
 
 As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems.
 
@@ -665,6 +668,23 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 \bibliography{qhtv2}
 
 %% Appendix
-%\appendix
+\appendix
+
+\section{Effects of the finite simulation}
+Theoretical results about the queuing construction apply in principe to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artifacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
+
+To accentuate this effect we use the Pearson $\phi$ coefficient that measures statistical correlation (between -1 and +1) between the filter's predictions and the expected answers. A coefficient of $1$ corresponds to an always correct filter, a coefficient of $-1$ to an always incorrect one, and a coefficient of $0$ means the filter produces answers that are statistically independent from the correct ones. 
+
+Figure~\ref{fig:strangess} measures $\phi$ as a function of $w$, for different stream sizes $N$. A visible peak in $\phi$ can be found around $w\approx N$.   
+
+\begin{figure*}[!ht]
+	\centering
+	\input{graphs/stream_size.tex}
+	\caption{Pearson $\phi$ for queuing SQF ($L = 10$, $M = 10^5$, $|\Gamma| = 2^16$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
+\end{figure*}
+
+As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
+
+It is also possible to run simulations for different alphabet sizes $\Gamma$, which shows that the peak's position increases with $|\Gamma|$, although the relationship is not obvious to quantify.
 
 \end{document}

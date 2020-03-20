@@ -1,8 +1,3 @@
-\documentclass[crop,tikz]{standalone}% 'crop' is the default for v1.0, before it was 'preview'
-\usepackage{pgfplots}
-\begin{document}
-
-
 \begin{filecontents*}[overwrite]{10e4.dat}
 a	b
 10	0.06479977490459428
@@ -315,22 +310,18 @@ a	b
 
 \end{filecontents*}
 
-
 \begin{tikzpicture}
-\begin{semilogxaxis}[legend pos=north west]
+\begin{semilogxaxis}[legend pos=north west, title=Stream size,width=\textwidth]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{10e4}
-  	\addplot table[x=a,y=b] {10e5.dat};
-\addlegendentry{10e5}
-  	\addplot table[x=a,y=b] {10e6.dat};
-\addlegendentry{10e6}
-  	\addplot table[x=a,y=b] {10e7.dat};
-\addlegendentry{10e7}
-  	\addplot table[x=a,y=b] {10e8.dat};
-\addlegendentry{10e8}
+  	\addplot[mark=+,color=blue] table[x=a,y=b] {10e5.dat};
+\addlegendentry{$10^5$}
+  	\addplot[mark=x,color=red] table[x=a,y=b] {10e6.dat};
+\addlegendentry{$10^6$}
+  	\addplot[mark=triangle,color=olive] table[x=a,y=b] {10e7.dat};
+\addlegendentry{$10^7$}
+  	\addplot[mark=square,color=teal] table[x=a,y=b] {10e8.dat};
+\addlegendentry{$10^8$}
 \end{semilogxaxis}
 
 \end{tikzpicture}
-
-
-\end{document}
