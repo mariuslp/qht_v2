@@ -418,8 +418,7 @@ As for the probabilities, the expressions derived above for the FNR and FNR are 
 
 \section{Optimising queuing filters}
 \label{sec:optimising}
-
-The parameter $L$ determines how many subfilters appear in the queuing construction. Summing up the false positive and false negative rates, we have a total error rate 
+Let us relax, temporarily, the a priori constraint that $w = cL$. The parameter $L$ determines how many subfilters appear in the queuing construction. Summing up the false positive and false negative rates, we have a total error rate 
 \begin{equation}
 	\operatorname{ER}_{\mathcal Q, cn}^{w}
 	= 1 - \alpha \beta^{L-1} + \alpha' \beta'^{L-1}
@@ -427,8 +426,14 @@ The parameter $L$ determines how many subfilters appear in the queuing construct
 where $\beta = 1 - \FP_{\mathcal F, c}$, $\beta' = u_c$, 
 $\alpha = \frac1c \sum_{\ell = 0}^{c-1}1 - \FP_{\mathcal F, \ell}$ and $\alpha' = \frac1c \sum_{\ell = 0}^{c-1} u_\ell$ only depend on $c$ and the choice of subfilter type $\mathcal F$. Differentiating with respect to $L$ and equating to zero gives an optimum
 \begin{equation*}
-	L = -\log((\alpha \beta' \log(\beta))/(\alpha'\beta \log(\beta')))/\log(\beta/\beta').
+	L_{c, \mathcal F} = -\log((\alpha \beta' \log(\beta))/(\alpha'\beta \log(\beta')))/\log(\beta/\beta').
 \end{equation*} 
+Thus for a given $c$ and choice of subfilter $\mathcal F$ we get an optimal value of $L = L_{c, \mathcal F}$,
+and we set, \emph{a posteriori}, $w \gets cL$.
+
+If instead $w$ is a given value, solving $w = c L_{c, \mathcal F}$ analytically may be challenging.
+A practical solution is to interpolate between explicitly computed values $cL_{c, \mathcal F}$ to find the 
+closest match for the target $w$.
 
 \todo[À vérifier la suite je suis pas convaincu encore]
 \begin{theorem}
