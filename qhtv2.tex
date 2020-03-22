@@ -424,31 +424,49 @@ Let us relax, temporarily, the a priori constraint that $w = cL$. The parameter 
 	= 1 - \alpha \beta^{L-1} + \alpha' \beta'^{L-1}
 \end{equation}
 where $\beta = 1 - \FP_{\mathcal F, c}$, $\beta' = u_c$, 
-$\alpha = \frac1c \sum_{\ell = 0}^{c-1}1 - \FP_{\mathcal F, \ell}$ and $\alpha' = \frac1c \sum_{\ell = 0}^{c-1} u_\ell$ only depend on $c$ and the choice of subfilter type $\mathcal F$. Differentiating with respect to $L$ and equating to zero gives an optimum
-\begin{equation*}
-	L_{c, \mathcal F} = -\log((\alpha \beta' \log(\beta))/(\alpha'\beta \log(\beta')))/\log(\beta/\beta').
-\end{equation*} 
-Thus for a given $c$ and choice of subfilter $\mathcal F$ we get an optimal value of $L = L_{c, \mathcal F}$,
-and we set, \emph{a posteriori}, $w \gets cL$.
+$\alpha = \frac1c \sum_{\ell = 0}^{c-1}1 - \FP_{\mathcal F, \ell}$ and $\alpha' = \frac1c \sum_{\ell = 0}^{c-1} u_\ell$ depend on $w$, $c$ and the choice of subfilter type $\mathcal F$.
 
-If instead $w$ is a given value, solving $w = c L_{c, \mathcal F}$ analytically may be challenging.
-A practical solution is to interpolate between explicitly computed values $cL_{c, \mathcal F}$ to find the 
-closest match for the target $w$.
+Because $u_\eta = p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$, differentiating with respect to $L$, knowing that $w = Lc$, and equating the derivative to $0$, one can find the optimal value for $L$ by solving for $x$, which has been obtained via Mathematica:
 
-\todo[À vérifier la suite je suis pas convaincu encore]
-\begin{theorem}
-	In first approximation, a low value of $L$ for constant value $cL$ leads to a higher false negative probability for the queuing filter.
-\end{theorem}
+%\begin{equation*}
+\begin{align*}
+&-\alpha \beta^{-1+x} \log(\beta)  \\ 
+&+ \left(\beta + \FN_{\mathcal F, c} (-1+x)\right)^{-2+x} x^{-x} \left[\vphantom{\left(\FN^{\FN}\right)}\right. \\
+&\quad
+	-\alpha \beta + \FN_{\mathcal F, c} \left(-\beta (-2+x)+ \FN_{\mathcal F, c} (-1+x)\right) \\
+&\quad	+ \left(\alpha+ \FN_{\mathcal F, c} (-1+x)\right) \\
+& \quad \quad \times\left(\beta + \FN_{\mathcal F, c} (-1+x)\right) \left(\log\left(\beta + \FN_{\mathcal F, c} (-1+x)\right)-\log(x)\right) \\
+&\left.\vphantom{\left(\FN^{\FN}\right)}\right] = 0
+\end{align*}
 
-\begin{proof}
-As a matter of fact, on average the queuing filter consists of $L-1$ subfilters with $c$ insertions, and one subfilter with $\frac c2$ insertions. As such, we can say that the queuing filter is a representation of the last $(c-\frac12) L$ last elements. 
+If solving the equation for individual cases is 
+%\end{equation*}
 
-Let us consider $e^\star \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as Theorem~\ref{thm:queue-pfn}'s proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
-
-Hence, the lower $L$ is, the higher the probability of false negative will be.
-
-The approximations made in this proof are backed by experimental results.
-\end{proof}
+%Differentiating with respect to $L$ and equating to zero gives an optimum
+%\begin{equation*}
+%	L_{c, \mathcal F} = -\log((\alpha \beta' \log(\beta))/(\alpha'\beta \log(\beta')))/\log(\beta/\beta').
+%\end{equation*} 
+%Thus for a given $c$ and choice of subfilter $\mathcal F$ we get an optimal value of $L = L_{c, \mathcal F}$,
+%and we set, \emph{a posteriori}, $w \gets cL$.
+%
+%If instead $w$ is a given value, solving $w = c L_{c, \mathcal F}$ analytically may be challenging.
+%A practical solution is to interpolate between explicitly computed values $cL_{c, \mathcal F}$ to find the 
+%closest match for the target $w$.
+%
+%\todo[À vérifier la suite je suis pas convaincu encore]
+%\begin{theorem}
+%	In first approximation, a low value of $L$ for constant value $cL$ leads to a higher false negative probability for the queuing filter.
+%\end{theorem}
+%
+%\begin{proof}
+%As a matter of fact, on average the queuing filter consists of $L-1$ subfilters with $c$ insertions, and one subfilter with $\frac c2$ insertions. As such, we can say that the queuing filter is a representation of the last $(c-\frac12) L$ last elements. 
+%
+%Let us consider $e^\star \wdup E$. If, in the sliding window, all duplicates only happened at least $(c-\frac12)L$ epochs ago (which happens with probability $\left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}$), we know that no duplicates happened in any subfilter's sliding window. By using the same reasoning as Theorem~\ref{thm:queue-pfn}'s proof, we get a probability of false negative of around $\left[0 + \left(1-\frac1{|\Gamma|}\right)^{(c-\frac12)L}(1-\FP_{\mathcal F,c})\right]^L$. Given that $cL \approx w$ which is a constant, we get that the probability of false positive mostly varies, in this case, with $\left(1-\FP_{\mathcal F,c}\right)^L$. 
+%
+%Hence, the lower $L$ is, the higher the probability of false negative will be.
+%
+%The approximations made in this proof are backed by experimental results.
+%\end{proof}
 
 
 \section{Queuing filters from existing DDFs}
@@ -528,32 +546,40 @@ We evaluate the saturation rate for several DDFs, in the original DDP setting (w
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
 %
-These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements. Results are plotted in Figure~\ref{fig:graph_n}.
+These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. %As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements.
+Results are plotted in Figure~\ref{fig:graph_n}.
 
-\begin{figure*}[!ht]
-	\begin{tikzpicture}
-	\begin{groupplot}[
-	group style = {
-		group size = 2 by 1,
-		horizontal sep = 35pt,
-	},
-	axis lines = left,
-	ylabel near ticks,
-	width = 0.4\textwidth,
-	height = 0.27\textwidth,
-	]
-	\input{er_n_artificial}
-	\input{er_n_real}
-	%\input{10e6_sum_zipf}
-	\end{groupplot}
-    \path (top)--(bot) coordinate[midway] (group center);
-%	\node[above,rotate=90] at (group center -| current bounding box.west) {Error rate (\%)};
-	\node[right=1em,inner sep=0pt] at(group center -| current bounding box.east) {\pgfplotslegendfromname{legend_n}};
-	\end{tikzpicture}
-
+%\begin{figure*}[!ht]
+%	\begin{tikzpicture}
+%	\begin{groupplot}[
+%	group style = {
+%		group size = 2 by 1,
+%		horizontal sep = 35pt,
+%	},
+%	axis lines = left,
+%	ylabel near ticks,
+%	width = 0.4\textwidth,
+%	height = 0.27\textwidth,
+%	]
 %	\input{er_n_artificial}
-	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
-\end{figure*}
+%	\input{er_n_real}
+%	%\input{10e6_sum_zipf}
+%	\end{groupplot}
+%    \path (top)--(bot) coordinate[midway] (group center);
+%%	\node[above,rotate=90] at (group center -| current bounding box.west) {Error rate (\%)};
+%	\node[right=1em,inner sep=0pt] at(group center -| current bounding box.east) {\pgfplotslegendfromname{legend_n}};
+%	\end{tikzpicture}
+%
+%%	\input{er_n_artificial}
+%	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
+%\end{figure*}
+
+\begin{figure}
+	\begin{tikzpicture}
+	\input{er_n_artificial}
+	\end{tikzpicture}
+	\caption{Error rate (times 100) of DDFs of 1Mb, over an artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
+\end{figure}
 
 The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
 
@@ -564,7 +590,7 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 
 \begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
-	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{18}$.}\label{tab:comparing_queuing}
+	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
 \end{figure}
 %\begin{table}[]
 %	\begin{tabular}{rccccc}
@@ -578,11 +604,19 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 %\end{table}
 
 \subsection{The number of subfilters}\label{sub:L_bench}
-\todo[À faire]
+We now compare the efficiency of the queueing filter, depending on the number of subfilters $L$. For this, we used a queueing QQHTD, on an artificial dataset of alphabet size $\Gamma = 2^{16}$, with 100 000 elements in the stream, on various sliding window sizes.
 
+Results are displayed in Figure~\ref{fig:bench_l}.
+
+\begin{figure}
+	\input{graphs/bench_l.tex}
+	\caption{Evolution of the error rate of a queueing QHT depending on the $L$ value, for various sliding window sizes, with $M=100000$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
+\end{figure}
+
+We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet (in first approximation).
 \subsection{Comparison of QHT and QHT-Queuing Filter}
 \todo[À faire]
-In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we use both an artificial dataset, as well as a real one, on various sliding window sizes.
+In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we use an artificial dataset on various sliding window sizes.
 
 \section{Adversarial Resistance}
 \label{sec:adversarial}

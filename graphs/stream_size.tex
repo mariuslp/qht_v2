@@ -311,11 +311,11 @@ a	b
 \end{filecontents*}
 
 \begin{tikzpicture}
-\begin{semilogxaxis}[legend pos=north west, title=Stream size,width=\textwidth]
+\begin{semilogxaxis}[legend pos=north west, title=TODO size,width=\textwidth]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{10e4}
   	\addplot[mark=+,color=blue] table[x=a,y=b] {10e5.dat};
-\addlegendentry{$10^5$}
+\addlegendentry{$10^5$};
   	\addplot[mark=x,color=red] table[x=a,y=b] {10e6.dat};
 \addlegendentry{$10^6$}
   	\addplot[mark=triangle,color=olive] table[x=a,y=b] {10e7.dat};
