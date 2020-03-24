@@ -172,7 +172,7 @@ We therefore introduce new definitions suited to that setting:
 Our goal is to minimise both the false positive and false negative rates of a DDF, given a fixed and limited amount of memory. Before going into details, we first explore the limits of the problem, i.e., when perfect or very performant solutions exist.
 
 \begin{theorem}
-	For $M \geq w (\log_2(w) + 1) \log_2(|\Gamma|)$, the sliding window DDP can be solved exactly (with no errors) in constant time.
+	For $M \geq w (2\log_2(w) + \log_2(|\Gamma|))$, the sliding window DDP can be solved exactly (with no errors) in constant time.
 \end{theorem}
 
 \begin{proof}
@@ -189,9 +189,9 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 	
 	Lookup of an element $e^\star$ is simply done by looking whether the key $D[e^\star]$ exists, which is done in constant time.
 	
-	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w \log_2 |\Gamma| \log_2 w$ (as the dictionary cannot have more than $w$ keys as the same time, and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus at most $w (\log_2(w) + 1) \log_2(|\Gamma|)$ bits are necessary for this DDF to work.
+	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w (\log_2 |\Gamma| + \log_2 w)$ (as the dictionary cannot have more than $w$ keys at the same time, a dictionary key occupies $\log_2 |\Gamma|$ bits and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus a requirement of $w (2\log_2(w) + \log_2(|\Gamma|))$ bits for this DDF to work.
 
-	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact tract of how many times each element was present in the sliding window.
+	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact account of how many times each element was present in the sliding window.
 \end{proof}
 The dependence on $\log_2 |\Gamma|$ can be droped, at the cost of allowing 
 errors:
@@ -214,7 +214,7 @@ Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of
 There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FNR of $0$ and a FPR of $1 - (1-\frac1{w^2})^w$.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 
-Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $5w\log_2 w$ bits of memory.
+Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, but with keys of size $2\log_2(w)$, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $w \cdot 2\log_2 w + w \cdot (2\log_2(w) + \log_2(w)) = 5w\log_2 w$ bits of memory.
 \end{proof}
 
 When $\log_2|\Gamma| > 2 \log_2 w$ (which is the case of most practical use cases) this DDF outperforms the naïve strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w \log_2|\Gamma|$ bits of memory.}, both in terms of time and memory.
@@ -590,7 +590,7 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 
 \begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
-	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
+	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=10^5$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
 \end{figure}
 %\begin{table}[]
 %	\begin{tabular}{rccccc}
@@ -610,13 +610,18 @@ Results are displayed in Figure~\ref{fig:bench_l}.
 
 \begin{figure}
 	\input{graphs/bench_l.tex}
-	\caption{Evolution of the error rate of a queueing QHT depending on the $L$ value, for various sliding window sizes, with $M=100000$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
+	\caption{Evolution of the error rate of a queueing QHT depending on the $L$ value, for various sliding window sizes, with $M=10^5$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
 \end{figure}
 
 We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet (in first approximation).
 \subsection{Comparison of QHT and QHT-Queuing Filter}
 \todo[À faire]
 In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we use an artificial dataset on various sliding window sizes.
+
+\begin{figure}
+	\input{graphs/improvement.tex}
+	\caption{Comparing performances of various filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:improvement}
+\end{figure}
 
 \section{Adversarial Resistance}
 \label{sec:adversarial}
@@ -710,16 +715,14 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 \section{Effects of the simulation's finiteness}
 \label{app:finite}
 
-Theoretical results about the queuing construction apply in principe to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artifacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
+Theoretical results about the queuing construction apply in principle to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artefacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
 
-To accentuate this effect we use the Pearson $\phi$ coefficient that measures statistical correlation (between -1 and +1) between the filter's predictions and the expected answers. A coefficient of $1$ corresponds to an always correct filter, a coefficient of $-1$ to an always incorrect one, and a coefficient of $0$ means the filter produces answers that are statistically independent from the correct ones. 
-
-Figure~\ref{fig:strangess} measures $\phi$ as a function of $w$, for different stream sizes $N$. A visible peak in $\phi$ can be found around $w\approx N$.   
+Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
 
 \begin{figure*}[!ht]
 	\centering
-	\input{graphs/stream_size.tex}
-	\caption{Pearson $\phi$ for queuing SQF ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
+	\input{graphs/stream_size_qht.tex}
+	\caption{Error rate for queuing QHT ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
 \end{figure*}
 
 As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
