@@ -95,19 +95,14 @@ We then introduce the \enquote{queuing construction}, a black box transformation
 
 Finally, we provide an analysis of our construction's resistance to adversarial streams (Section~\ref{sec:adversarial}).
 
-
 \subsection{Related work}\label{sub:related}
-The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}. However, the definition is not the one we use, as several variations exist such as \cite{shtul2020agepartitioned}. Instead, the wDDP formulation we used was already introduced in \cite{Yoo10,She08}. Both of these papers propose an algorithm for the wDDP.
+The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}. However, several variations exist and describe incompatible situations, such as \cite{shtul2020agepartitioned}. Instead, the wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
 
-Closer to our work, the idea of using subfilters can be found in the A2 filter's design \cite{Yoo10} and a variation of our idea can be found in a very recent construction, on a slightly different DDP formulation \cite{shtul2020agepartitioned}. The A2 is built from two Bloom filters, a situation which we generalise and analyse generically in this paper. Similarly, the solution in \cite{shtul2020agepartitioned} only works with Bloom Filters.
-
-
-\subsection{Organisation}
-\todo
+The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a situation which we generalise and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
 
 \section{Duplicate Detection and Filter Saturation}
 \label{sec:dudefisa}
-\subsection{Notations and Initial Problem Statement}
+\subsection{Notations and basic definitions}
 Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly infinite) set $E = (e_1, e_2, \dotsc)$, with each $e_i \in \Gamma$.
 
 \begin{definition}[Duplicate detection filter]
@@ -120,7 +115,7 @@ Let us consider an alphabet $\Gamma$. A stream $E$ over $\Gamma$ is a (possibly 
 	Informally, the $\mathsf{Detect}$ algorithm tentatively labels an element $e$ as duplicate or not, given the current state $\mathcal S$; whereas $\mathsf{Insert}$ takes as input the current state, an element $e$ to insert in the filter, and returns an updated memory state $\mathcal S'$. 
 \end{definition}
 
-We usually consider the situations where the available memory is too small for perfect detection, i.e., $|\mathcal S| \ll |\Gamma|$. Otherwise, if $|\mathcal S| = |\Gamma|$ then solutions in constant time and without errors exist \cite{10.1145/3297280.3297335}.
+We usually consider the situations where the available memory is too small for perfect detection, i.e., $|\mathcal S| \ll |\Gamma|$. Otherwise, if $|\mathcal S| = |\Gamma|$ then the problem can be solved in constant time without errors \cite{10.1145/3297280.3297335}.
 
 \begin{definition}[Duplicate element, unseen element over a sliding window]
 	Let $E = (e_1, e_2, \dotsc)$ be a stream over $\Gamma$, let $w\in \mathbb N$, an element $e_j \in E$ is called a \emph{duplicate} in $E$ over the sliding window of size $w$ if and only if there exists $j$ such that $j - w \leq i < j$  and $e_i = e_j$. In this case we write $e_j \wdup E$. Otherwise, $e_j$ is said to be \emph{unseen} and we write $e_j \notwdup E$.
@@ -160,7 +155,7 @@ We usually consider the situations where the available memory is too small for p
 %	Let $E = (e_1, \dotsc)$ be a stream, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements, denoted $\FP_i$ (resp. $\FN_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative).
 %\end{definition}
 
-One can observe that $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly for $\FNR^w_n$.
+We have $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly for $\FNR^w_n$.
 
 %\subsection{Filter Saturation and Sliding Windows}\label{sec:filsat}
 %Unfortunately, efficient duplicate detection over an infinite stream has been identified as an unsolvable problem \cite{10.1145/3297280.3297335}. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
@@ -192,13 +187,10 @@ One can observe that $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly
 %	Let $E$ be a stream, $\mathcal F$ be a DDF, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
 %\end{definition}
 
-\subsection{DDP vs wDDP}
-As noted before, some DDF were defined on the DDP, thus not offering a simple analysis of their error rates on the wDDP. 
+\section{DDFs and the wDDP}
+A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not desined for wDDP but a variant called `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
 
-The sliding window variant of DDP may seem to be a slight weakening of the original problem. However, it is more appropriated for many use cases, such as caching or click fraud. % Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP.
-A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not desined for either wDDP or DDP, as they work on what they call `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
-
-Of these, only the A2 and b\_DBF were designed for the wDDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
+Of these, only the A2 and b\_DBF were designed explicitly for the wDDP. Others DDFs do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
 
 \section{Optimal and Approximate Solutions}
@@ -230,23 +222,21 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 \end{proof}
 
 \subsection{Approximate Optimal wDDF}
-In the previous section, the optimal filter requires to know the size of $\Gamma$, which might be unknown, unbounded or simply too big for practical applications. 
-The dependence on $\log_2 |\Gamma|$ can be dropped, at the cost of allowing errors.
+The optimal filter described above requires that the size of $\Gamma$ is known in advance. The dependence on $\log_2 |\Gamma|$ can be dropped, at the cost of allowing errors.
 
 \begin{theorem}\label{thm:SHF}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the wDDP can be solved with almost no error using $M$ bits of memory.
 	
-	More precisely, it is possible to create a filter of $M$ bits with an FN of $0$, and an FP of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
+	More precisely, it is possible to create a filter of $M$ bits with an FN of $0$, an FP of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
 	
 	Using $M \simeq 5w\log_2 w$ bits of memory, a constant-time filter with the same error rate can be constructed.
 \end{theorem}
-Note that we only consider the probability of false positive after the filter has inserted at least $w$ elements, i.e., once the filter is full and has reached the stationary phase.
-
+Note that we only consider the probability of false positive after the filter has inserted at least $w$ elements, i.e., once the filter is full and has reached a stationary regime.
 \begin{proof}
 	Here again we explicitly construct the filters that attain the theorem's bounds.
 
 	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
-The birthday theorem, as summed up in \cite{10.1007/3-540-45708-9_19}, states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$). The 50\% threshold we impose on $h$ is arbitrary but nonetheless practical.
+The birthday theorem \cite{10.1007/3-540-45708-9_19} states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$). The 50\% threshold we impose on $h$ is arbitrary but nonetheless practical.
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the queue. 
 
@@ -260,12 +250,12 @@ When $\log_2|\Gamma| > 5 \log_2 w$ this DDF outperforms the naïve strategy\foot
 
 \section{Short Hash Filter}
 \subsection{Short Hash Filter Algorithm}
-The approximate filter we described uses hashes of size $2\log_2(w)$ for a given sliding window $w$. However, this hash size is arbitrary, and while it guarantees a very low error rate, it can be changed. More importantly, in some practical cases the maximal amount of available memory is fixed beforehand. Fixing the memory is also more practical for benchmarking various data structures, as it gives the guarantee that all filters operate under the same conditions.
+The approximate filter we described uses hashes of size $2\log_2(w)$ for a given sliding window $w$. However, this hash size is arbitrary, and while it guarantees a very low error rate, it can be changed. More importantly, in some practical cases the maximal amount of available memory is fixed beforehand. Fixing the memory is also more practical for benchmarking data structures, as it gives the guarantee that all filters operate under the same conditions.
 
-This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
+This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}. The implementation relies on a double-ended queue or a ring buffer, which allows pushing at beggining of a queue and popping at the end in constant time.
 
 
-\begin{algorithm}[]
+\begin{algorithm}[!ht]
 	\caption{SHF Setup, Lookup and Insert}\label{alg:SHF}
 	
 	\begin{algorithmic}[1]
@@ -307,12 +297,10 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 \end{algorithm}
 
 \subsection{Compact Short Hash Filter}
-For the sake of completeness, we also introduce the Compact Short Hash Filter, which is very similar to the Short Hash Filter, but does not use any dictionnary. Hence, the filter is much slower (complexity of $O(w)$), but also has fewer errors since there is more place for the queue.
+Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$ and is described in Algorithm~\ref{alg:CSHF}.
 
-A quick description of the Compact Short Hash Filter (CSHF) Setup function is given in Algorithm~\ref{alg:CSHF}. The other functions are similar to the ones of Algorithm~\ref{alg:SHF}, removing all references to the dictionary.
-
-\begin{algorithm}[]
-	\caption{CSHF, Setup}\label{alg:CSHF}
+\begin{algorithm}[!ht]
+	\caption{CSHF, Lookup and Insert}\label{alg:CSHF}
 	
 	\begin{algorithmic}[1]
 		\Function{Setup}{$\mathcal M, w$}
@@ -323,61 +311,130 @@ A quick description of the Compact Short Hash Filter (CSHF) Setup function is gi
 		\EndFunction 
 		\item[]
 	\end{algorithmic}
-%	
-%	\begin{algorithmic}[1]
-%		\Function{Lookup}{$e$}
-%		\State \Return $h(e) \in Q$ 
-%		\EndFunction
-%		\item[]
-%	\end{algorithmic}
-%	
-%	\begin{algorithmic}[1]
-%		\Function{Insert}{$e$}
-%		\Comment Same as SHF, but removing all instructions about its dictionnary $D$.
-%		\EndFunction
-%	\end{algorithmic}
+	
+	\begin{algorithmic}[1]
+		\Function{Lookup}{$e$}
+		\State \Return $h(e) \in Q$ 
+		\EndFunction
+		\item[]
+	\end{algorithmic}
+	
+	\begin{algorithmic}[1]
+		\Function{Insert}{$e$}
+		\State $Q.\mathsf{Push\_Front}(h(e))$
+		
+		\If{$Q.\mathsf{length}() > w$}
+			\State $h' \gets Q.\mathsf{Pop\_back}()$
+		\EndIf
+		\EndFunction
+	\end{algorithmic}
 \end{algorithm}
 
 \subsection{Error Rates}
-\begin{theorem}
-	Let $w \in \mathbb N$. Let $M \in \mathbb N$ be the available memory size. Let $\FN^w_{SHF}$ be the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_{SHF}$, $\FN^w_{CSHF}$, $\FP^w_{CSHF}$. 
-	Both SHF and QSHF have $\FN^w = 0$.
-	
-	Furthermore we have $\FP_{SHF}^w = 1 - \left(1 - \sqrt{w2^{-M/w}}\right)^w$ and $\FP_{CSHF}^w = 1 - \left(1 - 2^{-M/w}\right)^w$.
+Let $w> 0$ be a window size and $M > 0$ the available memory.
+
+We write $\FN^w_\text{SHF}$ the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_\text{SHF}$, $\FN^w_\text{CSHF}$, $\FP^w_\text{CSHF}$. 
+
+\begin{theorem}	
+	\begin{align*}
+		\FN_\text{SHF}^w&  = \FN_\text{CSHF}^w =0 \\
+		\FP_\text{SHF}^w & = 1 - \left(1 - \sqrt{w2^{-M/w}}\right)^w \\
+		\FP_\text{CSHF}^w & = 1 - \left(1 - 2^{-M/w}\right)^w
+	\end{align*}
 \end{theorem}
 
 \begin{proof}
 	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. An SHF has fingerprints of size $h = \frac M{2w} - \frac 12 \log_2 w$, while a CSHF has fingerprints of size $h' = \frac Mw$.
 \end{proof}
 
-It can be noted that a CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
+\paragraph{Remark:} A CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
 \subsection{Saturation}
-When benchmarking both structures, it appears they saturate very quickly when changing $w$: in other words, most SHF will either have an error rate of $0$ or $1$.
+Both SHF and CSHF have strictly increasing error rates, which reach a threshold of $1/2$ for some maximum window size $w_\text{max}$. Beyond this value, these filters saturate extremely quickly: in other words, most SHF will either have an error rate of $0$ or $1$.
 
-For instance, we benchmarked the performance of CSHF and SHF with a memory $M=100000$, on a stream of size 1 000 000 consisting of uniformly random elements from an alphabet of size $2^{18}$. Results are given in Figure~\ref{fig:shorts}.
+An illustration of this phenomenon can be seen in Figure~\ref{fig:shorts}, 
+which shows the error rates for CSHF and SHF with $M=10^5$, against 
+a uniformly random stream of $18$-bit elements ($|\Gamma| = 2^{18}$). The benchmark used a finite stream of length $10^6$.
 
-\begin{figure}
+\begin{figure}[!ht]
+	\centering
 	\input{graphs/bench_shorts.tex}
-	\caption{Error rates of SHFs and CSHFs of $100000$ bits, for various $w$.}\label{fig:shorts}
+	\caption{Error rates of SHFs and CSHFs for $M = 10^5$ bits, for varying window sizes $w$.}\label{fig:shorts}
 \end{figure}
 
-Finding an exact formula of the $w_{max}$ for which those filters reach an error of 50\% proved to be tedious. However, we numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results are given in Figure~\ref{fig:w_opt}. As it turns out, the relation between $w_{max}$ and $M$ is quasi-linear, and we get the following linear regressions, with values rounded to the third significant digit:
+The value $w_\text{max}$ can be obtained by solving (numerically) for $\FP^{w_\text{max}} = 1/2$ for a given $M$. We numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results are given in Figure~\ref{fig:w_opt} and indicate an approximately linear relationship between $M$ and $w_\text{max}$ for large values of $M$: $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$) and $w_\text{max}^\text{SHF} = 0.0233 M + 186$ ($r^2 = 0.9977$).
 
+\begin{figure}[]
+	\input{graphs/w_opt_shf.tex}
+	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 0.5 ($\pm 0.001$), for several values of $M$.}\label{fig:w_opt}
+\end{figure}
+
+
+
+\section{Non-windowed DDFs in a wDDP setting}
+\subsection{Saturation Resistance of DDFs}\label{sub:saturation}
+We evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and agree with \cite{10.1145/3297280.3297335}, namely:
+%
+\begin{itemize}
+	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
+	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
+	\item Cuckoo Filter \cite{Fan14}, cells containing 1 element of 3 bits each
+	\item Stable Bloom Filter (SBF) \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
+	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
+%	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
+\end{itemize}
+%
+These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. %As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements.
+Results are plotted in Figure~\ref{fig:graph_n}.
+
+%\begin{figure*}[!ht]
+%	\begin{tikzpicture}
+%	\begin{groupplot}[
+%	group style = {
+%		group size = 2 by 1,
+%		horizontal sep = 35pt,
+%	},
+%	axis lines = left,
+%	ylabel near ticks,
+%	width = 0.4\textwidth,
+%	height = 0.27\textwidth,
+%	]
+%	\input{er_n_artificial}
+%	\input{er_n_real}
+%	%\input{10e6_sum_zipf}
+%	\end{groupplot}
+%    \path (top)--(bot) coordinate[midway] (group center);
+%%	\node[above,rotate=90] at (group center -| current bounding box.west) {Error rate (\%)};
+%	\node[right=1em,inner sep=0pt] at(group center -| current bounding box.east) {\pgfplotslegendfromname{legend_n}};
+%	\end{tikzpicture}
+%
+%%	\input{er_n_artificial}
+%	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
+%\end{figure*}
+
+\begin{figure}[!ht]
+	\begin{tikzpicture}
+	\input{er_n_artificial}
+	\end{tikzpicture}
+	\caption{Error rate (times 100) of DDFs of 1Mb as a function of stream length. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
+\end{figure}
+
+The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
+
+
+\subsection{Performance in wDDP}
+We now consider the performance of the filters just discussed in the \emph{windowed} setting, for which they were \emph{not} designed. In particular, it is not possible to adjust their parameters as a function of $w$.
+
+Remarkably, some of these filters still outperform dedicated windowed filters for some window sizes at least, as shown in Figure~\label{fig:nwddf-in-wddp}. Nevertheless, we will now discuss the queuing construction, which allow us to build windowed filters from these.  
 
 \begin{figure}
-	\input{graphs/w_opt_shf.tex}
-	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 0.5 ($\pm 0.001$), for various values of $M$.}\label{fig:w_opt}
+	\centering
+	[TODO]
+	\caption{TODO}
+	\label{fig:nwddf-in-wddp}
 \end{figure}
-
-
-\begin{itemize}
-	\item For CSHF, $w_{max}^{CSHF} = 0.0627 M + 443$, with an $r^2 = 0.9981$
-	\item For SHF, $w_{max}^{SHF} = 0.0233 M + 186$, with an $r^2 = 0.9977$
-\end{itemize}
-
 
 \section{Queuing filters}\label{sec:queue}
-In this section, we describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
+We now describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
 A scheme describing our structure is detailed in Figure~\ref{fig:scheme}.
 
 \subsection{The queuing construction}
@@ -561,7 +618,7 @@ From the above expressions we can derive relatively compact explicit formulas fo
 \end{proof}
 As for the probabilities, the expressions derived above for the FNR and FNR are valid to first order in $(w - cL)/|\Gamma|$, i.e. they are good approximations even when $w \approx cL$. 
 
-\section{Optimising queuing filters}
+\subsection{Optimising queuing filters}
 \label{sec:optimising}
 Let us relax, temporarily, the a priori constraint that $w = cL$. The parameter $L$ determines how many subfilters appear in the queuing construction. Summing up the false positive and false negative rates, we have a total error rate 
 $	\operatorname{ER}_{\mathcal Q, cn}^{w}
@@ -582,8 +639,7 @@ Because $u_\eta = p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1
 & \quad \quad \times\left(\beta + \FN_{\mathcal F, c} (-1+x)\right) \left(\log\left(\beta + \FN_{\mathcal F, c} (-1+x)\right)-\log(x)\right) \\
 &\left.\vphantom{\left(\FN^{\FN}\right)}\right] = 0
 \end{align*}
-
-If solving the equation for individual cases is doable, it however does not seem possible to derive a generic formula.
+If numerically solving the equation for individual cases is feasible, it seems unlikely that a closed-form formula exists.
 %\end{equation*}
 
 %Differentiating with respect to $L$ and equating to zero gives an optimum
@@ -671,70 +727,16 @@ As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queu
 
 This section provides details and additional information on the benchmarking experiments run to validate the above analysis. All code is accessible online and will be disclosed after peer review.
 
-Our benchmarks cover two aspects: 
-\begin{enumerate}
-\item A measure of DDFs' saturation rate, in the original DDP setting (i.e. without a sliding window), which is used to choose a subfilter design;
-\item A measure of the effect of queuing on error rates, in the sliding window DDP setting. Namely, we compate QHT and a queuing QHT.
-\end{enumerate}
-An important note is that when the sliding window is small compared to the filter's memory size, optimal or nearly optimal solutions can be implemented (see Section~\ref{sub:opt_solutions}). This is practical for smaller values because we can measure exactly a filter's response compared to the \enquote{ground truth}. However, this is no longer possible for very large parameters as it would require too much memory for keeping track of the duplicates.
+\paragraph{Benchmarking queuing filters.}
+Applying the queuing construction to DDFs from the literature, we get new filters which are compared in the wDDP setting.
 
-\subsection{Saturation Resistance of DDFs}\label{sub:saturation}
-We evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and agree with \cite{10.1145/3297280.3297335}, namely:
-%
-\begin{itemize}
-	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
-	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
-	\item Cuckoo Filter \cite{Fan14}, cells containing 1 element of 3 bits each
-	\item Stable Bloom Filter (SBF) \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
-	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
-%	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
-\end{itemize}
-%
-These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. %As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements.
-Results are plotted in Figure~\ref{fig:graph_n}.
-
-%\begin{figure*}[!ht]
-%	\begin{tikzpicture}
-%	\begin{groupplot}[
-%	group style = {
-%		group size = 2 by 1,
-%		horizontal sep = 35pt,
-%	},
-%	axis lines = left,
-%	ylabel near ticks,
-%	width = 0.4\textwidth,
-%	height = 0.27\textwidth,
-%	]
-%	\input{er_n_artificial}
-%	\input{er_n_real}
-%	%\input{10e6_sum_zipf}
-%	\end{groupplot}
-%    \path (top)--(bot) coordinate[midway] (group center);
-%%	\node[above,rotate=90] at (group center -| current bounding box.west) {Error rate (\%)};
-%	\node[right=1em,inner sep=0pt] at(group center -| current bounding box.east) {\pgfplotslegendfromname{legend_n}};
-%	\end{tikzpicture}
-%
-%%	\input{er_n_artificial}
-%	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
-%\end{figure*}
-
-\begin{figure}
-	\begin{tikzpicture}
-	\input{er_n_artificial}
-	\end{tikzpicture}
-	\caption{Error rate (times 100) of DDFs of 1Mb, over an artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
-\end{figure}
-
-The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
-
-\subsection{Benchmarking Queuing Filters}
-We now use the queuing construction on the DDFs discussed previously. In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queuing filter for the sliding window DDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queuing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
+In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queuing filter for the wDDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queuing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
 A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer (see Appendix~\ref{app:finite}). This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
 \begin{figure}[!ht]
 	\input{graphs/compare_queues.tex}
-	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=10^5$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
+	\caption{Error rate (times 100) of queuing filters as a function of window size, $M=10^5$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
 \end{figure}
 %\begin{table}[]
 %	\begin{tabular}{rccccc}
@@ -747,25 +749,22 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 %	\caption{Error rate (times 100) of various queuing filters on various sliding window sizes, $M=100000$, $L=10$, $|\Gamma| = 2^{16}$. For each sliding window, the best performance is written in bold.}\label{tab:comparing_queuing}
 %\end{table}
 
-\subsection{The number of subfilters}\label{sub:L_bench}
-We now compare the efficiency of the queueing filter, depending on the number of subfilters $L$. For this, we used a queueing QQHTD, on an artificial dataset of alphabet size $\Gamma = 2^{16}$, with 100 000 elements in the stream, on various sliding window sizes.
+\paragraph{The number of subfilters}\label{sub:L_bench}
+The number of subfilters $L$ is an important parameter in the queuing construction, as it affects the filter's error rate in a nontrivial way. An illustration of this dependence is shown in Figure~\ref{fig:bench_l} which plots the error rate of a queueing QQHTD on an uniform stream of alphabet size $\Gamma = 2^{16}$, with $10^5$ elements in the stream, on various sliding window sizes. 
 
-Results are displayed in Figure~\ref{fig:bench_l}.
-
-\begin{figure}
+\begin{figure}[!ht]
 	\input{graphs/bench_l.tex}
-	\caption{Evolution of the error rate of a queueing QHT depending on the $L$ value, for various sliding window sizes, with $M=10^5$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
+	\caption{Evolution of the error rate of a queueing QHT as a function of $L$, for several window sizes, with $M=10^5$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
 \end{figure}
 
-We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet (in first approximation).
+We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet, at least in first approximation.
 
-\subsection{Comparison of QHT and QHT-Queuing Filter}
-In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we used the same artificial dataset as previously, as well as the same QHT filter than in previous sections. Moreover, we add a queuing QHT with an optimal value $L$ for each considered sliding window.
-For the sake of completeness, we also ran the comparison on the other DDFs. Results on the QHT and SQF are shown in Figure~\ref{fig:improvement}, results for the Cuckoo and SBF are shown in Appendix~\ref{app:improvement}.
+\paragraph{Filters vs queued filters.}
+Using the same stream as previously, we can build queued filters (with an optimal value $L$ for each considered sliding window) and compare their performances to that of non-modified filters. Results on the QHT and SQF are shown in Figure~\ref{fig:improvement}, results for the Cuckoo and SBF are shown in Appendix~\ref{app:improvement}.
 
-\begin{figure}
+\begin{figure}[!ht]
 	\input{graphs/improvement.tex}
-	\caption{Comparing performances of various filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:improvement}
+	\caption{Comparing performances of QHT and SQF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:improvement}
 \end{figure}
 
 \section{Adversarial Resistance}
@@ -860,7 +859,9 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 \section{Effects of the simulation's finiteness}
 \label{app:finite}
 
-Theoretical results about the queuing construction apply in principle to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artefacts in the error rates. Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
+Theoretical results about the queuing construction apply in principle to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artefacts in the error rates.
+
+Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
 
 Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
 
@@ -874,7 +875,7 @@ As can be seen on this simulation, there is only disagreement around $w \approx 
 
 It is also possible to run simulations for different alphabet sizes $\Gamma$, which shows that the peak's position increases with $|\Gamma|$, although the relationship is not obvious to quantify.
 
-\section{Comparing DDFs and their Queueing Counterpart}\label{app:improvement}
+\section{Filters vs queued filters (complement)}\label{app:improvement}
 We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Filter, as well as the SBF relatively to the queueing SBF. The results are given in Figure~\ref{fig:appendix_improvement}.
 
 \begin{figure*}[!ht]
@@ -894,6 +895,6 @@ We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Fi
 	\end{semilogxaxis}
 
 \end{tikzpicture}
-	\caption{Comparing performances of various filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
+	\caption{Comparing performances of the Cuckoo and SBF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
 \end{figure*}
 \end{document}
