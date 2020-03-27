@@ -88,7 +88,7 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 \end{filecontents*}
 
 \begin{tikzpicture}
-\begin{semilogxaxis}[width=0.35\textwidth, legend pos = outer north east, ylabel=$\FPR^w + \FNR^w (\times 100)$, xlabel=$w$]
+\begin{semilogxaxis}[legend cell align = left, width=0.35\textwidth, legend pos = outer north east, ylabel=$\FPR^w + \FNR^w (\times 100)$, xlabel=$w$]
   	\addplot[color=red, mark=+] table[x=w,y=Error] {qht.dat};
 \addlegendentry{Q\_QHT}
   	\addplot[color=blue, mark=x] table[x=w,y=Error] {sqf.dat};

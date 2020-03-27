@@ -261,7 +261,7 @@ a	b
 \end{filecontents*}
 
 \begin{tikzpicture}
-\begin{semilogxaxis}[legend pos=north west, xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$,width=\textwidth]
+\begin{semilogxaxis}[legend pos=outer north east, xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{$10^4$}
   	\addplot[mark=+,color=blue] table[x=a,y=b] {10e5.dat};

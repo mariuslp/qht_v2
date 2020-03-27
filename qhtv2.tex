@@ -42,7 +42,9 @@
 	introduced in \cite{She08,Yoo10}, which consists in finding duplicate 
 	entries amongst the last $w$ elements of the stream for a fixed integer $w$. 
 
-	In this paper we formalise this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduced a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting. 
+	In this paper we formalise this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduced a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
+	
+	We also analyse the security of our filters in an adversarial setting. 
 \end{abstract}
 
 %% CCS XML
@@ -125,6 +127,11 @@ We usually consider the situations where the available memory is too small for p
 	Let $w \in \mathbb N$, $e \notwdup E$ (resp. $e \wdup E$) and let $\mathcal F$ be a DDF. We say that $e$ is a \emph{false positive} (resp. \emph{false negative}) over $w$ if $\mathsf{Detect}(e) = \DUPLICATE$ (resp. $\UNSEEN$).
 \end{definition}
 
+\begin{definition}[Probability of false positive, of false negative]
+	\label{def:pfp-pfn}
+	Let $E = (e_1, \dotsc)$ be a stream, $w\in \mathbb N$, $\mathcal F$ be a filter. The \emph{probability of false positive} (resp. \emph{probability of false negative}) of $\mathcal F$ after $i$ elements over a sliding window of size $w$, denoted $\FP^w_i$ (resp. $\FN^w_i$), is defined as the probability that $e_{i+1}$ is a false positive (resp. false negative) over $w$.
+\end{definition}
+
 \begin{definition}[False positive rate, false negative rate over a sliding window]
 	Let $E$ be a stream, $\mathcal F$ be a DDF, $w \in \mathbb N$. The \emph{false positive} (resp. \emph{false negative}) rate of $\mathcal F$ over the first $i < n$ elements and the sliding window $w$, noted $\FPR^w_i$ (resp. $\FNR^w_i$), is defined as the number of false positives over $w$ divided by the number of unseen elements in $E$ over $w$ (resp. the number of false negative over $w$ divided by the number of duplicate elements over $w$).
 \end{definition}
@@ -185,10 +192,10 @@ One can observe that $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly
 \subsection{DDP vs wDDP}
 As noted before, some DDF were defined on the DDP, thus not offering a simple analysis of their error rates on the wDDP. 
 
-The sliding window variant of DDP may seem to be a slight weakening of the original problem.% Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP.
-A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not suited to either sliding window or no sliding window DDP, as they work on what they call `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
+The sliding window variant of DDP may seem to be a slight weakening of the original problem. However, it is more appropriated for many use cases, such as caching or click fraud. % Remarkably, it turns out that DDFs which perform well for the DDP do rather poorly for the sliding window DDP.
+A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not desined for either wDDP or DDP, as they work on what they call `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
 
-Of these, only the A2 and b\_DBF were designed in a way immediately applicable to the sliding window DDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
+Of these, only the A2 and b\_DBF were designed for the wDDP. The others do not account for a finite-length sliding window, and therefore cannot be adjusted as a function of $w$. Another remarkable (but experimental) observation is that these DDFs' false positive rate does not decrease to 0 when the sliding window becomes small.
 
 
 \section{Optimal and Approximate Solutions}
@@ -226,10 +233,11 @@ The dependence on $\log_2 |\Gamma|$ can be dropped, at the cost of allowing erro
 \begin{theorem}\label{thm:SHF}
 	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the wDDP can be solved with almost no error using $M$ bits of memory.
 	
-	More precisely, it is possible to create a filter of $M$ bits with an FNR of $0$, and an FPR of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
+	More precisely, it is possible to create a filter of $M$ bits with an FN of $0$, and an FP of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
 	
 	Using $M \simeq 5w\log_2 w$ bits of memory, a constant-time filter with the same error rate can be constructed.
 \end{theorem}
+Note that we only consider the probability of false positive after the filter has inserted at least $w$ elements, i.e., once the filter is full and has reached the stationary phase.
 
 \begin{proof}
 	Here again we explicitly construct the filters that attain the theorem's bounds.
@@ -245,7 +253,7 @@ The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of me
 Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, but with keys of size $2\log_2(w)$, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $w \cdot 2\log_2 w + w \cdot (2\log_2(w) + \log_2(w)) = 5w\log_2 w$ bits of memory.
 \end{proof}
 
-When $\log_2|\Gamma| > 2 \log_2 w$ this DDF outperforms the naïve strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w \log_2|\Gamma|$ bits of memory.}, both in terms of time and memory, at the cost of a minimal error. When $\log_2|\Gamma| > 2 \log_2 w$, it outperforms the exact solution described sooner in terms of memory.
+When $\log_2|\Gamma| > 5 \log_2 w$ this DDF outperforms the naïve strategy\footnote{The naïve strategy consisting of storing the $w$ elements of the sliding window, requiring $w \log_2|\Gamma|$ bits of memory.}, both in terms of time and memory, at the cost of a minimal error. When $\log_2|\Gamma| > 2 \log_2 w$, it outperforms the exact solution described sooner in terms of memory.
 
 \section{Short Hash Filter}
 \subsection{Short Hash Filter Algorithm}
@@ -329,7 +337,7 @@ A quick description of the Compact Short Hash Filter (CSHF) is given in Algorith
 
 \subsection{Error Rates}
 \begin{theorem}
-	Let $w \in \mathbb N$. Let $M \in \mathbb N$ be the available memory size. Let $\FN^w_{SHF}$ be the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_{SHF}$, $\FN^w_{CSHF}$, $\FP^w_{CSHF}$
+	Let $w \in \mathbb N$. Let $M \in \mathbb N$ be the available memory size. Let $\FN^w_{SHF}$ be the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_{SHF}$, $\FN^w_{CSHF}$, $\FP^w_{CSHF}$. 
 	Both SHF and QSHF have $\FN^w = 0$.
 	
 	Furthermore we have $\FP_{SHF}^w = 1 - \left(1 - \sqrt{w2^{-M/w}}\right)^w$ and $\FP_{CSHF}^w = 1 - \left(1 - 2^{-M/w}\right)^w$.
@@ -339,7 +347,7 @@ A quick description of the Compact Short Hash Filter (CSHF) is given in Algorith
 	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. An SHF has fingerprints of size $h = \frac M{2w} - \frac 12 \log_2 w$, while a CSHF has fingerprints of size $h' = \frac Mw$.
 \end{proof}
 
-It can be noted that a CSHF of size $M$ has the same error rate than an SHF of size $(2 + \frac {\log_2 w}h)M$.
+It can be noted that a CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
 \subsection{Saturation}
 When benchmarking both structures, it appears they saturate very quickly when changing $w$: in other words, most SHF will either have an error rate of $0$ or $1$.
 
@@ -502,9 +510,9 @@ This concludes the proof.
 From the above expressions we can derive relatively compact explicit formulas for the queuing filter's FPR and FNR when $m = cn$ for $n$ a positive integer.
 \begin{theorem}
 	Let $\FPR_{\mathcal Q, m}^w$ be the false positive rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
-	\begin{equation}
+	\begin{equation*}
 	\FPR_{\mathcal Q, cn}^w = 1 -  \frac{(1 - \FP_{\mathcal F, c})^{L-1}}{c}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell}).
-	\end{equation}
+	\end{equation*}
 \end{theorem}
 \begin{proof}
 
@@ -520,9 +528,9 @@ From the above expressions we can derive relatively compact explicit formulas fo
 
 \begin{theorem}
 	Let $\FNR_{\mathcal Q, m}^w$ be the false negative rate of $\mathcal Q$ after $m=cn > w$ insertions on a sliding window of size $w = cL$, we have
-	\begin{equation}
+	\begin{equation*}
 	\FNR_{\mathcal Q, cn}^w = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell.
-	\end{equation}
+	\end{equation*}
 \end{theorem}
 
 \begin{proof}
@@ -540,10 +548,9 @@ As for the probabilities, the expressions derived above for the FNR and FNR are 
 \section{Optimising queuing filters}
 \label{sec:optimising}
 Let us relax, temporarily, the a priori constraint that $w = cL$. The parameter $L$ determines how many subfilters appear in the queuing construction. Summing up the false positive and false negative rates, we have a total error rate 
-\begin{equation}
-	\operatorname{ER}_{\mathcal Q, cn}^{w}
+$	\operatorname{ER}_{\mathcal Q, cn}^{w}
 	= 1 - \alpha \beta^{L-1} + \alpha' \beta'^{L-1}
-\end{equation}
+$,
 where $\beta = 1 - \FP_{\mathcal F, c}$, $\beta' = u_c$, 
 $\alpha = \frac1c \sum_{\ell = 0}^{c-1}1 - \FP_{\mathcal F, \ell}$ and $\alpha' = \frac1c \sum_{\ell = 0}^{c-1} u_\ell$ depend on $w$, $c$ and the choice of subfilter type $\mathcal F$.
 
@@ -629,8 +636,8 @@ such filters saturate: indeed, in the original DDP setting, all filters eventual
 	Hence, the error probability of the filter is
 	\begin{align*}
 		ER_n 
-		& = \FN_n + p \\
-		& =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p \\
+		& = \FN_n + p
+		 =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p \\
 		& = 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
 	\end{align*}
 	which is minimized when $p = 0$. 
@@ -735,9 +742,10 @@ Results are displayed in Figure~\ref{fig:bench_l}.
 \end{figure}
 
 We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet (in first approximation).
+
 \subsection{Comparison of QHT and QHT-Queuing Filter}
-\todo[À faire]
-In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we use an artificial dataset on various sliding window sizes.
+In this section, we compare the efficiency of QHT and QHT-queuing filter. For this, we used the same artificial dataset as previously, as well as the same QHT filter than in previous sections. Moreover, we add a queuing QHT with an optimal value $L$ for each considered sliding window.
+For the sake of completeness, we also ran the comparison on the other DDFs. Results on the QHT and SQF are shown in Figure~\ref{fig:improvement}, results for the Cuckoo and SBF are shown in Appendix~\ref{app:improvement}.
 
 \begin{figure}
 	\input{graphs/improvement.tex}
@@ -840,14 +848,37 @@ Theoretical results about the queuing construction apply in principle to an infi
 
 Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
 
-\begin{figure*}[!ht]
+\begin{figure}[!ht]
 	\centering
 	\input{graphs/stream_size_qht.tex}
 	\caption{Error rate for queuing QHT ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
-\end{figure*}
+\end{figure}
 
 As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
 
 It is also possible to run simulations for different alphabet sizes $\Gamma$, which shows that the peak's position increases with $|\Gamma|$, although the relationship is not obvious to quantify.
+
+\section{Comparing DDFs and their Queueing Counterpart}\label{app:improvement}
+We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Filter, as well as the SBF relatively to the queueing SBF. The results are given in Figure~\ref{fig:appendix_improvement}.
+
+\begin{figure*}[!ht]
+\begin{tikzpicture}
+	\begin{semilogxaxis}[legend cell align = left, legend pos=outer north east, xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
+	\addplot[color=teal, mark=triangle] table[x=w,y=Error] {Queueing_Cuckoo.dat};
+	\addlegendentry{Q\_Cuckoo};
+	\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {Cuckoo.dat};
+	\addlegendentry{Cuckoo};
+	%%
+	\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {Queueing_StableBloom.dat};
+	\addlegendentry{$Q\_SBF$};
+	\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {SBF.dat};
+	\addlegendentry{$SBF$};
+	
+	%\addplot[mark=x,^8$}
+	\end{semilogxaxis}
+
+\end{tikzpicture}
+	\caption{Comparing performances of various filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
+\end{figure*}
 
 \end{document}
