@@ -277,7 +277,7 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 
 		\State\Return filter
 		\EndFunction 
-		\item[]
+%		\item[]
 	\end{algorithmic}
 
 	\begin{algorithmic}[1]
@@ -287,7 +287,7 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 		\EndIf
 		\State \Return \UNSEEN
 	\EndFunction
-	\item[]
+%	\item[]
 	\end{algorithmic}
 	
 	\begin{algorithmic}[1]
@@ -309,10 +309,10 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 \subsection{Compact Short Hash Filter}
 For the sake of completeness, we also introduce the Compact Short Hash Filter, which is very similar to the Short Hash Filter, but does not use any dictionnary. Hence, the filter is much slower (complexity of $O(w)$), but also has fewer errors since there is more place for the queue.
 
-A quick description of the Compact Short Hash Filter (CSHF) is given in Algorithm~\ref{alg:CSHF}.
+A quick description of the Compact Short Hash Filter (CSHF) Setup function is given in Algorithm~\ref{alg:CSHF}. The other functions are similar to the ones of Algorithm~\ref{alg:SHF}, removing all references to the dictionary.
 
 \begin{algorithm}[]
-	\caption{CSHF, Lookup and Insert}\label{alg:CSHF}
+	\caption{CSHF, Setup}\label{alg:CSHF}
 	
 	\begin{algorithmic}[1]
 		\Function{Setup}{$\mathcal M, w$}
@@ -323,19 +323,19 @@ A quick description of the Compact Short Hash Filter (CSHF) is given in Algorith
 		\EndFunction 
 		\item[]
 	\end{algorithmic}
-	
-	\begin{algorithmic}[1]
-		\Function{Lookup}{$e$}
-		\State \Return $h(e) \in Q$ 
-		\EndFunction
-		\item[]
-	\end{algorithmic}
-	
-	\begin{algorithmic}[1]
-		\Function{Insert}{$e$}
-		\Comment Same as SHF, but removing all instructions about its dictionnary $D$.
-		\EndFunction
-	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Lookup}{$e$}
+%		\State \Return $h(e) \in Q$ 
+%		\EndFunction
+%		\item[]
+%	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Insert}{$e$}
+%		\Comment Same as SHF, but removing all instructions about its dictionnary $D$.
+%		\EndFunction
+%	\end{algorithmic}
 \end{algorithm}
 
 \subsection{Error Rates}
@@ -366,7 +366,7 @@ Finding an exact formula of the $w_{max}$ for which those filters reach an error
 
 \begin{figure}
 	\input{graphs/w_opt_shf.tex}
-	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 50\% ($\pm 0.001$), for various values of $M$.}\label{fig:w_opt}
+	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 0.5 ($\pm 0.001$), for various values of $M$.}\label{fig:w_opt}
 \end{figure}
 
 
@@ -864,11 +864,11 @@ Theoretical results about the queuing construction apply in principle to an infi
 
 Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
 
-\begin{figure}[!ht]
+\begin{figure*}[!ht]
 	\centering
 	\input{graphs/stream_size_qht.tex}
 	\caption{Error rate for queuing QHT ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
-\end{figure}
+\end{figure*}
 
 As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
 
@@ -896,5 +896,4 @@ We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Fi
 \end{tikzpicture}
 	\caption{Comparing performances of various filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
 \end{figure*}
-
 \end{document}
