@@ -358,7 +358,20 @@ For instance, we benchmarked the performance of CSHF and SHF with a memory $M=10
 	\caption{Error rates of SHFs and CSHFs of $100000$ bits, for various $w$.}\label{fig:shorts}
 \end{figure}
 
-More specifically, \todo[Trouver la formule pour laquelle CSHF sature à 50\% ou quelque chose du genre]
+Finding an exact formula of the $w_{max}$ for which those filters reach an error of 50\% proved to be tedious. However, we numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results are given in Figure~\ref{fig:w_opt}. As it turns out, the relation between $w_{max}$ and $M$ is quasi-linear, and we get the following linear regressions, with values rounded to the third significant digit:
+
+
+\begin{figure}
+	\input{graphs/w_opt_shf.tex}
+	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 50\% ($\pm 0.001$), for various values of $M$.}\label{fig:w_opt}
+\end{figure}
+
+
+\begin{itemize}
+	\item For CSHF, $w_{max}^{CSHF} = 0.0627 M + 443$, with an $r^2 = 0.9981$
+	\item For SHF, $w_{max}^{SHF} = 0.0233 M + 186$, with an $r^2 = 0.9977$
+\end{itemize}
+
 
 \section{Queuing filters}\label{sec:queue}
 In this section, we describe the queuing construction, which produces a sliding window DDF from any DDF. We first give the description of the setup, before studying the theoretical error rates. 
