@@ -42,7 +42,7 @@
 	introduced in \cite{She08,Yoo10}, which consists in finding duplicate 
 	entries amongst the last $w$ elements of the stream for a fixed integer $w$. 
 
-	In this paper we formalise this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduced a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
+	In this paper we formalise this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
 	
 	We also analyse the security of our filters in an adversarial setting. 
 \end{abstract}
@@ -63,34 +63,37 @@
 \section{Introduction}
 \subsection{Motivation}
 
-We study the following problem: 
-\begin{definition}[Duplicate detection problem on a sliding window, wDDP] Given a stream $E_n = (e_1, e_2, \dotsc, e_n)$, a sliding window size $w$ and a \enquote{new} item $e^\star$, find whether $e^\star$ is also present in the last $w$ elements of the stream, ie., whether $e^\star \in \{e_{n-w+1}, \dotsc, e_n\}$.
+Throughout this paper, we are interested in the following problem: 
+\begin{definition}[Duplicate detection problem over a sliding window, wDDP] Given a stream $E_n = (e_1, e_2, \dotsc, e_n)$, a sliding window size $w$ and a \enquote{new} item $e^\star$, find whether $e^\star$ is also present in the last $w$ elements of the stream, ie., whether $e^\star \in \{e_{n-w+1}, \dotsc, e_n\}$.
 At every time increment, the new item is added to the stream, i.e., $E_{n+1} = E_n \mid e^\star$ where $\mid$ denotes concatenation. 
 \end{definition}
-Instances of this problem abound in computer science, with applications in file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
+Instances of this problem abound in computer science, with applications to file system indexation, database queries, network load balancing, network management \cite{10.5555/647912.740658}, in credit card fraud detection \cite{DBLP:journals/corr/abs-1709-08920}, phone calls data mining \cite{10.1145/347090.347094}, etc. A discussion about algorithms on large data streams can be found in \cite{10.1145/776985.776986}. 
 
 In practice, additional constraints exist that we can capture with the following definition:
 \begin{definition}[wDDP with bounded memory]
 	At every time step $n$, given $e^{\star}$ and a current state (dependent on history) of at most $M$ bits, solve the wDDP for $E_n$ and $e^{\star}$.
 \end{definition}
 %Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
-One can prove \cite[Theorem 2.1]{10.1145/3297280.3297335} that perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical. As a result, we need a further relaxation of the DDP that allows for errors: 
+Perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory \cite[Theorem 2.1]{10.1145/3297280.3297335}: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical. As a result, we need a further relaxation of the DDP that allows for errors: 
 \begin{definition}[Approximate wDDP with bounded memory]
 	Solve the wDDP using at most $M$ bits of memory, with at most $\epsilon < 1/2$ mispredictions.\footnote{Given a classifier with $\epsilon > 1/2$, we obtain a classifier with $\epsilon < 1/2$ by reversing its output.} 
 \end{definition}
 Approximate duplicate detection has many real-life use cases, and can sometimes play a critical role, for instance in cryptographic schemes where all security and secrecy fall apart as soon as a random nonce is used twice, such as the ElGamal \cite{10.1007/3-540-39568-7_2} or ECDSA signatures. Other uses include improvements over caches \cite{4484874}, duplicate clicks \cite{10.1145/1060745.1060753}, and others.
 
-On a side note, it is clear that the input distribution plays a central role regarding how efficiently the DDP can be solved. For instance, some deterministic streams may be expressed very compactly (such as the output of a PRNG with known seed) making the DDP relatively easy. Information-theoretically, if the source has $U$ bits of entropy then the situation is equivalent to having an $U$-bit, uniformly distributed input. 
+On a side note, it is clear that the input distribution plays a central role regarding how efficiently the DDP can be solved. For instance, some deterministic streams may be expressed very compactly (such as the output of a PRNG with known seed) making the DDP relatively easy. Information-theoretically, if the source has $U$ bits of entropy then the situation is equivalent to having an $U$-bit, uniformly distributed input. This is the setting we consider here.
 
-We observe that in the litterature, there exists a similar problem, which we call DDP, and which does not make use of any sliding window. For instance, in DDP on a stream $E_n$ the problem is to find whether $e^\star \in E_n$. However, even though several algorithms have been proposed for this problem (\cite{Den06,10.1145/3297280.3297335,Dut13} and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}), they \emph{all} face a phenomenon called \enquote{saturation} on large data streams \cite{10.1145/3297280.3297335}. This phenomenon is not related to the filter, but rater to the nature of the DDP itself. Essentially, when saturation happens the algorithm performs no better than at random. This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits.  
+As the window size in wDDP grows infinitely large, it becomes the following problem: find whether $e^\star \in E_n$. This \enquote{non-windowed} problem predates in fact the definition of wDDP, and several algorithms have been proposed for this problem: \cite{Den06,10.1145/3297280.3297335,Dut13} and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. Unfortunately \emph{all} these solutions face a phenomenon called \enquote{saturation} on large enough data streams. In fact, saturation is inevitable with infinite windows \cite{10.1145/3297280.3297335}, and when it happens the algorithm performs no better than at random. 
+
+This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits.  
 
 \subsection{Contributions}
-%To circumvent the aforementioned limitations, we introduce a variant of the DDP \emph{over a sliding window}, which enables the design of filters that avoids the saturation issue altogether (Section~\ref{sec:dudefisa}). We provide explicit upper bounds for the amount of memory necessary to solve this problem, and corresponding constructions.
-%
-%We then introduce the \emph{queuing construction}, a generic approach to build windowed-DDP-friendly filters from existing filters (Sections~\ref{sec:queue} and \ref{sec:subfilter-select}). We analyse the queuing construction's error rates and parameters (Section~\ref{sec:optimising}), which are confirmed by benchmarks (Section~\ref{sec:bench}). 
-%
-%Finally, we provide an analysis of the queuing construction's resistance to adversarial streams (Section~\ref{sec:adversarial}).
-\todo
+In this paper we show that the wDDP problem can be solved exactly using $M$ bits of memory, up to a window size $w_\text{max}$; we provide an explicit algorithm achieving this, which can run in constant time. Allowing small errors makes it possible to push $w_\text{max}$ further; we provide the corresponding constant-time (SHF) and linear-time (CSHF) constructions.
+
+Unfortunately, for $w > w_\text{max}$ the performance of these algorithms degrade very rapidly. We therefore turn our attention to existing data structures designed for the \enquote{non-windowed} setting. We show that some of them outperform dedicated data structures, including SHF/CSHF, in the $w > w_\text{max}$ regime.
+
+We then introduce the \enquote{queuing construction}, a black box transformation of non-windowed data structures into windowed ones, that improves their performance in the wDDP setting.
+
+Finally, we provide an analysis of our construction's resistance to adversarial streams (Section~\ref{sec:adversarial}).
 
 
 \subsection{Related work}\label{sub:related}
