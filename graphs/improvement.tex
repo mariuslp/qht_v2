@@ -262,7 +262,11 @@
 
 
 \begin{tikzpicture}
-\begin{semilogxaxis}[legend cell align = left, legend pos=outer north east, width=0.35\textwidth, xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
+\begin{semilogxaxis}[legend cell align = left,%
+	 %legend pos=outer north east,
+	legend style={at={(0.02,0.98)},anchor=north west},%
+	  %width=0.35\textwidth, 
+	  xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{$10^4$}
 \addplot[color=red, mark=+] table[x=w,y=Error] {Queueing_QHT.dat};

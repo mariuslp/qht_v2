@@ -255,7 +255,7 @@ The approximate filter we described uses hashes of size $2\log_2(w)$ for a given
 This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}. The implementation relies on a double-ended queue or a ring buffer, which allows pushing at beggining of a queue and popping at the end in constant time.
 
 
-\begin{algorithm}[!ht]
+\begin{algorithm}[!h]
 	\caption{SHF Setup, Lookup and Insert}\label{alg:SHF}
 	
 	\begin{algorithmic}[1]
@@ -299,7 +299,7 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 \subsection{Compact Short Hash Filter}
 Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$ and is described in Algorithm~\ref{alg:CSHF}.
 
-\begin{algorithm}[!ht]
+\begin{algorithm}[!h]
 	\caption{CSHF, Lookup and Insert}\label{alg:CSHF}
 	
 	\begin{algorithmic}[1]
@@ -355,20 +355,20 @@ An illustration of this phenomenon can be seen in Figure~\ref{fig:shorts},
 which shows the error rates for CSHF and SHF with $M=10^5$, against 
 a uniformly random stream of $18$-bit elements ($|\Gamma| = 2^{18}$). The benchmark used a finite stream of length $10^6$.
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 	\centering
 	\input{graphs/bench_shorts.tex}
 	\caption{Error rates of SHFs and CSHFs for $M = 10^5$ bits, for varying window sizes $w$.}\label{fig:shorts}
 \end{figure}
 
-The value $w_\text{max}$ can be obtained by solving (numerically) for $\FP^{w_\text{max}} = 1/2$ for a given $M$. We numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results are given in Figure~\ref{fig:w_opt} and indicate an approximately linear relationship between $M$ and $w_\text{max}$ for large values of $M$: $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$) and $w_\text{max}^\text{SHF} = 0.0233 M + 186$ ($r^2 = 0.9977$).
+The value $w_\text{max}$ can be obtained by solving (numerically) for $\FP^{w_\text{max}} = 1/2$ for a given $M$. We numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results
+% are given in Figure~\ref{fig:w_opt} and 
+indicate an approximately linear relationship between $M$ and $w_\text{max}$ for large values of $M$: $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$) and $w_\text{max}^\text{SHF} = 0.0233 M + 186$ ($r^2 = 0.9977$).
 
-\begin{figure}[]
-	\input{graphs/w_opt_shf.tex}
-	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 0.5 ($\pm 0.001$), for several values of $M$.}\label{fig:w_opt}
-\end{figure}
-
-
+%\begin{figure}[]
+%	\input{graphs/w_opt_shf.tex}
+%	\caption{Value $w_{max}$ for which SHF and CSHF reach an error of 0.5 ($\pm 0.001$), for several values of $M$.}\label{fig:w_opt}
+%\end{figure}
 
 \section{Non-windowed DDFs in a wDDP setting}
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
@@ -386,7 +386,7 @@ We evaluate the saturation rate for several DDFs, in the original DDP setting (w
 These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. %As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements.
 Results are plotted in Figure~\ref{fig:graph_n}.
 
-%\begin{figure*}[!ht]
+%\begin{figure*}[!h]
 %	\begin{tikzpicture}
 %	\begin{groupplot}[
 %	group style = {
@@ -411,7 +411,7 @@ Results are plotted in Figure~\ref{fig:graph_n}.
 %	\caption{Error rate (times 100) of DDFs of 1Mb, over a real and artificial stream, depending on the size of the stream, without any sliding window. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
 %\end{figure*}
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 	\begin{tikzpicture}
 	\input{er_n_artificial}
 	\end{tikzpicture}
@@ -426,7 +426,7 @@ We now consider the performance of the filters just discussed in the \emph{windo
 
 Remarkably, some of these filters still outperform dedicated windowed filters for some window sizes at least, as shown in Figure~\label{fig:nwddf-in-wddp}. Nevertheless, we will now discuss the queuing construction, which allow us to build windowed filters from these.  
 
-\begin{figure}
+\begin{figure}[h]
 	\centering
 	\input{graphs/compare_qht_bdbf_a2.tex}
 	\caption{Error rates for QHT, b\_DBF, and A2. While A2 and b\_DBF were designed and ajusted to the wDDP, this is not the case of QHT. Still, QHT outperforms these filters for some values of $w$.}
@@ -734,7 +734,7 @@ In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with t
 
 A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer (see Appendix~\ref{app:finite}). This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 	\input{graphs/compare_queues.tex}
 	\caption{Error rate (times 100) of queuing filters as a function of window size, $M=10^5$, $L=10$, $|\Gamma| = 2^{18}$, on a stream of size $10^7$.}\label{tab:comparing_queuing}
 \end{figure}
@@ -752,7 +752,7 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 \paragraph{The number of subfilters}\label{sub:L_bench}
 The number of subfilters $L$ is an important parameter in the queuing construction, as it affects the filter's error rate in a nontrivial way. An illustration of this dependence is shown in Figure~\ref{fig:bench_l} which plots the error rate of a queueing QQHTD on an uniform stream of alphabet size $\Gamma = 2^{16}$, with $10^5$ elements in the stream, on various sliding window sizes. 
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 	\input{graphs/bench_l.tex}
 	\caption{Evolution of the error rate of a queueing QHT as a function of $L$, for several window sizes, with $M=10^5$, $|\Gamma| = 2^{18}$, on a stream of size $10^6$.}\label{fig:bench_l}
 \end{figure}
@@ -762,7 +762,7 @@ We observe that the optimal value for $L$ does indeed depend on the desired slid
 \paragraph{Filters vs queued filters.}
 Using the same stream as previously, we can build queued filters (with an optimal value $L$ for each considered sliding window) and compare their performances to that of non-modified filters. Results on the QHT and SQF are shown in Figure~\ref{fig:improvement}, results for the Cuckoo and SBF are shown in Appendix~\ref{app:improvement}.
 
-\begin{figure}[!ht]
+\begin{figure}[!h]
 	\input{graphs/improvement.tex}
 	\caption{Comparing performances of QHT and SQF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:improvement}
 \end{figure}
@@ -865,11 +865,11 @@ Note that these effects have very little impact on practical implementations of 
 
 Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
 
-\begin{figure*}[!ht]
+\begin{figure}[]
 	\centering
 	\input{graphs/stream_size_qht.tex}
 	\caption{Error rate for queuing QHT ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
-\end{figure*}
+\end{figure}
 
 As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
 
@@ -878,23 +878,26 @@ It is also possible to run simulations for different alphabet sizes $\Gamma$, wh
 \section{Filters vs queued filters (complement)}\label{app:improvement}
 We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Filter, as well as the SBF relatively to the queueing SBF. The results are given in Figure~\ref{fig:appendix_improvement}.
 
-\begin{figure*}[!ht]
+\begin{figure}[]
 \begin{tikzpicture}
-	\begin{semilogxaxis}[legend cell align = left, legend pos=outer north east, xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
+	\begin{semilogxaxis}[legend cell align = left,%
+		 %legend pos=outer north east, 
+	legend style={at={(0.02,0.98)},anchor=north west},%
+		 xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
 	\addplot[color=teal, mark=triangle] table[x=w,y=Error] {Queueing_Cuckoo.dat};
 	\addlegendentry{Q\_Cuckoo};
 	\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {Cuckoo.dat};
 	\addlegendentry{Cuckoo};
 	%%
 	\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {Queueing_StableBloom.dat};
-	\addlegendentry{$Q\_SBF$};
+	\addlegendentry{Q\_SBF};
 	\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {SBF.dat};
-	\addlegendentry{$SBF$};
+	\addlegendentry{SBF};
 	
 	%\addplot[mark=x,^8$}
 	\end{semilogxaxis}
 
 \end{tikzpicture}
 	\caption{Comparing performances of the Cuckoo and SBF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
-\end{figure*}
+\end{figure}
 \end{document}
