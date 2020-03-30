@@ -89,13 +89,13 @@ Unfortunately any solution to this problem faces a phenomenon called \enquote{sa
 This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits.  
 
 \subsection{Contributions}
-In this paper we show that the wDDP problem can be solved exactly using $M$ bits of memory, up to a window size $w_\text{max}$; we provide an explicit algorithm achieving this, which can run in constant time. Allowing small errors makes it possible to push $w_\text{max}$ further; we provide the corresponding constant-time (SHF) and linear-time (CSHF) constructions.
+In this paper, we start from a naïve solution for the wDDP to then derive bounds for when it can be solved within $M$ bits of memory, up to a window size $w_\text{max}$, in constant time. We then introduce a generalisation of the naïve solution, and study its error rate. We show that this construction, which we call Short Hash Filter (SHF), can push the value $w_\text{max}$ further while operating at being constant time --at the cost of some errors. If allowing for linear time, we also provide a better alternative, the Compact Short Hash Filter (CSHF).
 
 Unfortunately, for $w > w_\text{max}$ the performance of these algorithms degrade very rapidly. We therefore turn our attention to existing data structures designed for the \enquote{non-windowed} setting. We show that some of them outperform dedicated data structures, including SHF/CSHF, in the $w > w_\text{max}$ regime.
 
 We then introduce the \enquote{queuing construction}, a black box transformation of non-windowed data structures into windowed ones, that improves their performance in the wDDP setting.
 
-Finally, we provide an analysis of our construction's resistance to adversarial streams (Section~\ref{sec:adversarial}).
+Finally, we provide an analysis of our queueing construction's resistance to adversarial streams. (Section~\ref{sec:adversarial}).
 
 \subsection{Related work}\label{sub:related}
 The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}. However, several variations exist and describe incompatible situations, such as \cite{shtul2020agepartitioned}. Instead, the wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
@@ -245,7 +245,7 @@ The birthday theorem \cite{10.1007/3-540-45708-9_19} states that for a hash func
 
 Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the queue. 
 
-There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FNR of $0$ and a FPR of $1 - (1-\frac1{w^2})^w$.
+There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FN of $0$ and a FP of $1 - (1-\frac1{w^2})^w$.
 The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
 
 Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, but with keys of size $2\log_2(w)$, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $w \cdot 2\log_2 w + w \cdot (2\log_2(w) + \log_2(w)) = 5w\log_2 w$ bits of memory.
@@ -302,38 +302,38 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 \end{algorithm}
 
 \subsection{Compact Short Hash Filter}
-Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$ and is described in Algorithm~\ref{alg:CSHF}.
+Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, one stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
 
-\begin{algorithm}[!h]
-	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
-	
-	\begin{algorithmic}[1]
-		\Function{Setup}{$\mathcal M, w$}
-		\Comment $M$ is the available memory, $w$ the size of the sliding window
-		\State $h \gets$ hash function of codomain size $\lfloor \frac Mw \rfloor$
-		\State $Q \gets \emptyset$ \Comment $Q$ is a queue of elements of size $h$
-		\State\Return filter
-		\EndFunction 
-		\item[]
-	\end{algorithmic}
-	
-	\begin{algorithmic}[1]
-		\Function{Lookup}{$e$}
-		\State \Return $h(e) \in Q$ 
-		\EndFunction
-		\item[]
-	\end{algorithmic}
-	
-	\begin{algorithmic}[1]
-		\Function{Insert}{$e$}
-		\State $Q.\mathsf{Push\_Front}(h(e))$
-		
-		\If{$Q.\mathsf{length}() > w$}
-			\State $h' \gets Q.\mathsf{Pop\_back}()$
-		\EndIf
-		\EndFunction
-	\end{algorithmic}
-\end{algorithm}
+%\begin{algorithm}[!h]
+%	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Setup}{$\mathcal M, w$}
+%		\Comment $M$ is the available memory, $w$ the size of the sliding window
+%		\State $h \gets$ hash function of codomain size $\lfloor \frac Mw \rfloor$
+%		\State $Q \gets \emptyset$ \Comment $Q$ is a queue of elements of size $h$
+%		\State\Return filter
+%		\EndFunction 
+%		\item[]
+%	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Lookup}{$e$}
+%		\State \Return $h(e) \in Q$ 
+%		\EndFunction
+%		\item[]
+%	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Insert}{$e$}
+%		\State $Q.\mathsf{Push\_Front}(h(e))$
+%		
+%		\If{$Q.\mathsf{length}() > w$}
+%			\State $h' \gets Q.\mathsf{Pop\_back}()$
+%		\EndIf
+%		\EndFunction
+%	\end{algorithmic}
+%\end{algorithm}
 
 \subsection{Error Rates}
 Let $w> 0$ be a window size and $M > 0$ the available memory.
@@ -368,7 +368,8 @@ a uniformly random stream of $18$-bit elements ($|\Gamma| = 2^{18}$). The benchm
 
 The value $w_\text{max}$ can be obtained by solving (numerically) for $\FP^{w_\text{max}} = 1/2$ for a given $M$. We numerically solved the equation $\FP^w = 0.5$ for these two filters, for about 200 different values of $M$, uniformly distributed \emph{on a log scale} between $10^2$ and $10^6$. Results
 % are given in Figure~\ref{fig:w_opt} and 
-indicate an approximately linear relationship between $M$ and $w_\text{max}$ for large values of $M$: $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$) and $w_\text{max}^\text{SHF} = 0.0233 M + 186$ ($r^2 = 0.9977$).
+indicate an approximately linear relationship between $M$ and $w_\text{max}$: %for large values of $M$:
+ $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$) and $w_\text{max}^\text{SHF} = 0.0233 M + 186$ ($r^2 = 0.9977$).
 
 %\begin{figure}[]
 %	\input{graphs/w_opt_shf.tex}
@@ -384,11 +385,11 @@ This bound is useful for several reasons, notably it provides an estimation of h
 \begin{theorem}
 	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $ER_n = \FP_n + \FN_n$ satisfies
 	\begin{equation}
-	ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
+	E_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
 	\end{equation}
 	for any $n > M$.
 \end{theorem}
-In particular, the asymptotic error rate $ER_\infty$ satisfies $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
+In particular, the asymptotic error rate $E_\infty$ satisfies $E_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
 
 \begin{proof}
 	By definition, a perfect filter has the lowest possible error rate.
@@ -474,7 +475,7 @@ We now consider the performance of the filters just discussed in the \emph{windo
 
 Remarkably, some of these filters still outperform dedicated windowed filters for some window sizes at least, as shown in Figure~\ref{fig:nwddf-in-wddp}. In this benchmark, we used the following filters:
 \begin{itemize}
-	\item block decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of size $w$
+	\item block decaying Bloom Filter\footnote{Note that by design, a b\_DBF of $10^5$ bits cannot be built over a sliding window bigger than $6000$.} (b\_DBF) \cite{She08}, sliding window of size $w$
 	\item A2 filter \cite{Yoo10}, changing subfilter every $w/2$ insertions
 	\item QHT \cite{10.1145/1060745.1060753}, 1 bucket per row, $3$ bits per fingerprint
 \end{itemize}
@@ -627,7 +628,7 @@ Finally, each event is weighted by the probability $p_c$ that $e^\star$ is in $\
 	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
 	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
 	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}\\
-		\end{align*}\begin{align*}p_c
+%		\end{align*}\begin{align*}p_c
 	& = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
 	& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
 \end{align*}
@@ -786,7 +787,7 @@ Using the same stream as previously, we can build queued filters (with an optima
 
 We observe that queueing filters do not necessarily behave better than their 'vanilla' counterparts, especially on large sliding windows. This can be interpreted by the fact that the DDPs were optimised for infinite sliding windows, and as such operate better than their queueing equivalent on large sliding windows.
 
-\section{Adversarial Resistance}
+\section{Adversarial Resistance of Queueing Filters}
 \label{sec:adversarial}
 
 As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems.
