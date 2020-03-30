@@ -113,22 +113,25 @@ L	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	
 	
 	\begin{tikzpicture}
-	\begin{semilogxaxis}[legend cell align = left, width=0.35\textwidth, legend pos = outer north east, ylabel= $\FPR^w + \FNR^w (\times 100)$, xlabel = L]
+	\begin{semilogxaxis}[legend cell align = right, width=0.35\textwidth, legend pos = outer north east, ylabel= $\FPR^w + \FNR^w (\times 100)$, xlabel = L]
 %	\addplot table[x=L,y=1-E] {100.dat};
 %	\addlegendentry{w = 100}
 %	\addplot table[x=L,y=1-E] {500.dat};
 %	\addlegendentry{w = 500}
+   \addlegendimage{empty legend}
+   \addlegendentry{$w$ value\hspace{.6cm}}
+   
 	\addplot table[x=L,y=Error] {1000.dat};
-	\addlegendentry{$w=10^3$}	
+	\addlegendentry{$10^3$}	
 	\addplot table[x=L,y=Error] {5000.dat};
-	\addlegendentry{$w = 5\cdot 10^3$}
+	\addlegendentry{$5\cdot 10^3$}
 	\addplot[mark=triangle] table[x=L,y=Error] {10000.dat};
-	\addlegendentry{$w=10^4$}
+	\addlegendentry{$10^4$}
 	\addplot table[x=L,y=Error] {30000.dat};
-	\addlegendentry{$w = 3\cdot 10^4$}
+	\addlegendentry{$3\cdot 10^4$}
 	\addplot table[x=L,y=Error] {50000.dat};
-	\addlegendentry{$w = 5\cdot 10^4$}
+	\addlegendentry{$5\cdot 10^4$}
 	\addplot table[x=L,y=Error] {100000.dat};
-	\addlegendentry{$w=10^5$}
+	\addlegendentry{$10^5$}
 	\end{semilogxaxis}
 	\end{tikzpicture}

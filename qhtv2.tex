@@ -74,7 +74,8 @@ In practice, additional constraints exist that we can capture with the following
 	At every time step $n$, given $e^{\star}$ and a current state (dependent on history) of at most $M$ bits, solve the wDDP for $E_n$ and $e^{\star}$.
 \end{definition}
 %Even when the stream is bounded, i.e. $\lim_{n\to\infty}|E_n| < \infty$, it may be impractical to perform a complete lookup and approximate solutions are desirable. 
-Perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory \cite[Theorem 2.1]{10.1145/3297280.3297335}: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical. As a result, we need a further relaxation of the DDP that allows for errors: 
+%Perfect detection of duplicates in a stream with $U$ possible values requires $U$ bits of memory \cite[Theorem 2.1]{10.1145/3297280.3297335}: even for modest situations (e.g. 64-bit nonces, corresponding to $2^{64}$ possible values) this is quickly impractical. As a result, we need a further relaxation of the DDP that allows for errors: 
+Perfect detection is however not always reachable and it might be more practical to work on a further relaxation of the problem, allowing for errors:
 \begin{definition}[Approximate wDDP with bounded memory]
 	Solve the wDDP using at most $M$ bits of memory, with at most $\epsilon < 1/2$ mispredictions.\footnote{Given a classifier with $\epsilon > 1/2$, we obtain a classifier with $\epsilon < 1/2$ by reversing its output.} 
 \end{definition}
@@ -82,7 +83,8 @@ Approximate duplicate detection has many real-life use cases, and can sometimes 
 
 On a side note, it is clear that the input distribution plays a central role regarding how efficiently the DDP can be solved. For instance, some deterministic streams may be expressed very compactly (such as the output of a PRNG with known seed) making the DDP relatively easy. Information-theoretically, if the source has $U$ bits of entropy then the situation is equivalent to having an $U$-bit, uniformly distributed input. This is the setting we consider here.
 
-As the window size in wDDP grows infinitely large, it becomes the following problem: find whether $e^\star \in E_n$. This \enquote{non-windowed} problem predates in fact the definition of wDDP, and several algorithms have been proposed for this problem: \cite{Den06,10.1145/3297280.3297335,Dut13} and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. Unfortunately \emph{all} these solutions face a phenomenon called \enquote{saturation} on large enough data streams. In fact, saturation is inevitable with infinite windows \cite{10.1145/3297280.3297335}, and when it happens the algorithm performs no better than at random. 
+As the window size in wDDP grows infinitely large, it becomes the following problem: find whether $e^\star \in E_n$. %This \enquote{non-windowed} problem predates in fact the definition of wDDP, and several algorithms have been proposed for this problem: \cite{Den06,10.1145/3297280.3297335,Dut13} and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}.
+Unfortunately any solution to this problem faces a phenomenon called \enquote{saturation} on large enough data streams. In fact, saturation is inevitable with infinite windows \cite{10.1145/3297280.3297335}, and when it happens the algorithm performs no better than at random. 
 
 This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits.  
 
@@ -98,7 +100,7 @@ Finally, we provide an analysis of our construction's resistance to adversarial 
 \subsection{Related work}\label{sub:related}
 The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}. However, several variations exist and describe incompatible situations, such as \cite{shtul2020agepartitioned}. Instead, the wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
 
-The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a situation which we generalise and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
+The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a construction which we generalise and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
 
 \section{Duplicate Detection and Filter Saturation}
 \label{sec:dudefisa}
@@ -157,6 +159,9 @@ We usually consider the situations where the available memory is too small for p
 
 We have $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly for $\FNR^w_n$.
 
+
+\paragraph{Remark.} For benchmarking, we usually measure the error rate $ER = \FPR^w + \FNR^w$, as it allows a practical ranking of the solutions. An error rate of $0$ means a perfect filter, while a filter answering randomly has an error rate of $1$. A filter being always wrong has an error rate of $2$.
+
 %\subsection{Filter Saturation and Sliding Windows}\label{sec:filsat}
 %Unfortunately, efficient duplicate detection over an infinite stream has been identified as an unsolvable problem \cite{10.1145/3297280.3297335}. As a matter of fact, as the number of bits of information of the stream grow to infinity, the filter can only remember an ever diminishing proportion of those bits, eventually having no advantage compared to a filter answering randomly.
 %
@@ -210,7 +215,7 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 	ancillary data structure for the sake of quickly answering lookup questions.
 	Namely we use a dictionary $D$ whose keys are elements from $\Gamma$ and values are counters.
 	
-	Whe an element $e$ is inserted in the DDF, $e$ is stored and $D[e]$ is incremented (if the key $e$ did not exist in $D$, it is created first, and
+	When an element $e$ is inserted in the DDF, $e$ is stored and $D[e]$ is incremented (if the key $e$ did not exist in $D$, it is created first, and
 	$D[e]$ is set to $1$). In order to keep the number of stored elements to $w$, 
 	we discard the oldest element $e_\text{last}$ in $Q$. As we do so, we also decrement $D[e_\text{last}]$, and if $D[e_{last}] = 0$ the key is deleted from $D$. The whole insertion procedure is therefore performed in constant time.
 	
@@ -218,7 +223,7 @@ Our goal is to minimise both the false positive and false negative rates of a DD
 	
 	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w (\log_2 |\Gamma| + \log_2 w)$ (as the dictionary cannot have more than $w$ keys at the same time, a dictionary key occupies $\log_2 |\Gamma|$ bits and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus a requirement of $w (\log_2(w) + 2\log_2(|\Gamma|))$ bits for this DDF to work.
 
-	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact account of how many times each element was present in the sliding window.
+	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact account of how many times each element is present in the sliding window.
 \end{proof}
 
 \subsection{Approximate Optimal wDDF}
@@ -300,7 +305,7 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$ and is described in Algorithm~\ref{alg:CSHF}.
 
 \begin{algorithm}[!h]
-	\caption{CSHF, Lookup and Insert}\label{alg:CSHF}
+	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
 	
 	\begin{algorithmic}[1]
 		\Function{Setup}{$\mathcal M, w$}
@@ -371,18 +376,61 @@ indicate an approximately linear relationship between $M$ and $w_\text{max}$ for
 %\end{figure}
 
 \section{Non-windowed DDFs in a wDDP setting}
+\subsection{Lower Bound on the Saturation Resistance}
+As said in the introduction, it has been proven \cite{10.1145/3297280.3297335} that all filters will reach saturation on the DDP setting. However, they sometimes prove to be efficient in some specific wDDP settings.
+
+This bound is useful for several reasons, notably it provides an estimation of how close to optimality existing filters are.
+
+\begin{theorem}
+	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $ER_n = \FP_n + \FN_n$ satisfies
+	\begin{equation}
+	ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
+	\end{equation}
+	for any $n > M$.
+\end{theorem}
+In particular, the asymptotic error rate $ER_\infty$ satisfies $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
+
+\begin{proof}
+	By definition, a perfect filter has the lowest possible error rate.
+	With $M$ bits of memory, a perfect filter can store at most $M$ elements in memory \cite[Theorem 2.1]{10.1145/3297280.3297335}. Up to reordering the stream, without loss of generality because it is random, we may assumethat the filter stores the $M$ last elements of the stream: any other strategy cannot yield a strictly lower error rate.
+	
+	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter can choose to answer randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory. An optimal filter will lower the error rate of any filter using the same strategy with a different probability.
+	
+	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
+	
+	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
+	\begin{align*}
+		\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
+		& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
+		\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
+	\end{align*}
+	Hence, the error probability of the filter is
+	\begin{align*}
+		E_n 
+		& = \FN_n + p
+		=  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p \\
+		& = 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
+	\end{align*}
+	which is minimized when $p = 0$. 
+\end{proof}
+
+Note, as highlighted in the proof, that this bound is \emph{not tight}: better bounds may exist, the study of which we leave as an open question for future work.
+
+
 \subsection{Saturation Resistance of DDFs}\label{sub:saturation}
-We evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and agree with \cite{10.1145/3297280.3297335}, namely:
+We now evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and were taken from \cite{10.1145/3297280.3297335}, namely:
 %
 \begin{itemize}
 	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
 	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
 	\item Cuckoo Filter \cite{Fan14}, cells containing 1 element of 3 bits each
 	\item Stable Bloom Filter (SBF) \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
-	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
+%	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
 %
+
+
 These filters are run against a stream of uniformly sampled elements from an alphabet of $2^{26}$ elements. This results in around 8\% duplicates (up to statistical fluctuations) amongst the 150 000 000 elements in the longest stream used. %As a comparison, we also run the same benchmark against a stream obtained from crawling data, the same one as \cite{10.1145/3297280.3297335}, a real-world source which is highly non-uniform --- note that in this case, our lower bound on the error rate does not apply, owing to the stream being compressible. In that stream, around 10\% were duplicates amongst the 150 000 000 elements.
 Results are plotted in Figure~\ref{fig:graph_n}.
 
@@ -418,18 +466,25 @@ Results are plotted in Figure~\ref{fig:graph_n}.
 	\caption{Error rate (times 100) of DDFs of 1Mb as a function of stream length. Hatched area represents over-optimal (impossible) values.}\label{fig:graph_n}
 \end{figure}
 
-The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality.
+The best results are given by the following filters, in order: QHT, SQF, Cuckoo and SBF. We also observe that QHT and SQF have error rates relatively close to the lower bound, hence suggesting that these filters are close to optimality, especially since the lower bound is not tight.
 
 
 \subsection{Performance in wDDP}
 We now consider the performance of the filters just discussed in the \emph{windowed} setting, for which they were \emph{not} designed. In particular, it is not possible to adjust their parameters as a function of $w$.
 
-Remarkably, some of these filters still outperform dedicated windowed filters for some window sizes at least, as shown in Figure~\label{fig:nwddf-in-wddp}. Nevertheless, we will now discuss the queuing construction, which allow us to build windowed filters from these.  
+Remarkably, some of these filters still outperform dedicated windowed filters for some window sizes at least, as shown in Figure~\ref{fig:nwddf-in-wddp}. In this benchmark, we used the following filters:
+\begin{itemize}
+	\item block decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of size $w$
+	\item A2 filter \cite{Yoo10}, changing subfilter every $w/2$ insertions
+	\item QHT \cite{10.1145/1060745.1060753}, 1 bucket per row, $3$ bits per fingerprint
+\end{itemize}
+
+Nevertheless, we will now discuss the queuing construction, which allow us to build windowed filters from the DDP filters.  
 
 \begin{figure}[h]
 	\centering
 	\input{graphs/compare_qht_bdbf_a2.tex}
-	\caption{Error rates for QHT, b\_DBF, and A2. While A2 and b\_DBF were designed and ajusted to the wDDP, this is not the case of QHT. Still, QHT outperforms these filters for some values of $w$.}
+	\caption{Error rates for QHT, b\_DBF, and A2. While A2 and b\_DBF were designed and adjusted to the wDDP, this is not the case of QHT. Still, QHT outperforms these filters for some values of $w$.}
 	\label{fig:nwddf-in-wddp}
 \end{figure}
 
@@ -537,7 +592,7 @@ As a result, if $w < cL$, the queuing filter can hold information about \emph{mo
 
 \paragraph{Remark.} In the case $w < cL$, as mentioned previously, there is a non-zero probability that $e^\star$ is in the last subfilter's memory, despite not belonging to the sliding window. 
 	
-Assuming a uniformly random input stream, and writing $\delta = cL - w$, the probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta$. For large $\Gamma$ (as is expected to be the case in most applications), this probability is about $\frac{\delta}{|\Gamma|} \ll 1$. Hence, we can neglect the probability that $e^\star$ is present in the filter, and we consider the result of Theorem~\ref{thm:queue-pfp} to be a very good approximation even when $w < cL$.
+Assuming a uniformly random input stream, and writing $\delta = cL - w$, the probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta$. For large $|\Gamma|$ (as is expected to be the case in most applications), this probability is about $\frac{\delta}{|\Gamma|} \ll 1$. Hence, we can neglect the probability that $e^\star$ is present in the filter, and we consider the result of Theorem~\ref{thm:queue-pfp} to be a very good approximation even when $w < cL$.
 
 \subsubsection{Probability of False Negative}\label{sub:fnr}
 \begin{theorem}
@@ -572,6 +627,7 @@ Finally, each event is weighted by the probability $p_c$ that $e^\star$ is in $\
 	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
 	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
 	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}\\
+		\end{align*}\begin{align*}p_c
 	& = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
 	& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
 \end{align*}
@@ -678,48 +734,9 @@ DDF design (rather than a combination of different designs).
 
 Indeed, a simple symmetry argument shows that a heterogenous selection of subfilters is always worse than a homogeneous one: the crux is that all subfilters play the same role in turn. Therefore we lose nothing by replacing atomically one subfilter by a more efficient one. Applying this to each subfilter we end up with a homogenous selection.
 
-It remains to decide which subfilter construction to choose. 
-When comparing different DDFs, one interesting metric in our context is how fast
-such filters saturate: indeed, in the original DDP setting, all filters eventually saturate \cite{10.1145/3297280.3297335}, but they may reach that state more or less quickly. The following result gives the behaviour of a perfect filter regarding this question:
+It remains to decide which subfilter construction to choose. The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarizes in Figure~\ref{fig:graph_n}. It appears that the most efficient filter (in terms of saturation rate) is the QHT \cite{10.1145/3297280.3297335}.
 
-\begin{theorem}
-	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $ER_n = \FP_n + \FN_n$ satisfies
-	\begin{equation}
-		ER_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
-	\end{equation}
-	for any $n > M$.
-\end{theorem}
-	In particular, the asymptotic error rate $ER_\infty$ satisfies $ER_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
-
-\begin{proof}
-	By definition, a perfect filter has the lowest possible error rate.
-	With $M$ bits of memory, a perfect filter can store at most $M$ elements in memory \cite[Theorem 2.1]{10.1145/3297280.3297335}. Up to reordering the stream, without loss of generality because it is random, we may assumethat the filter stores the $M$ last elements of the stream: any other strategy cannot yield a strictly lower error rate.
-	
-	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter can choose to answer randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory. An optimal filter will lower the error rate of any filter using the same strategy with a different probability.
-	
-	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
-	
-	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
-	\begin{align*}
-	\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
-	& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
-	\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
-	\end{align*}
-	Hence, the error probability of the filter is
-	\begin{align*}
-		ER_n 
-		& = \FN_n + p
-		 =  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p \\
-		& = 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
-	\end{align*}
-	which is minimized when $p = 0$. 
-	\end{proof}
-
-Note, as highlighted in the proof, that this bound is \emph{not tight}: better bounds may exist, the study of which we leave as an open question for future work. 
-
-The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarizes in Figure~\ref{fig:graph_n}. It appears that the two most efficient filters (in terms of saturation rate) are the QHT \cite{10.1145/3297280.3297335} and the A2 \cite{Yoo10}.
-
-As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
+%As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
 
 %In the experiments we use QHT for the benchmarking of the queuing construction.
 
@@ -766,6 +783,8 @@ Using the same stream as previously, we can build queued filters (with an optima
 	\input{graphs/improvement.tex}
 	\caption{Comparing performances of QHT and SQF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:improvement}
 \end{figure}
+
+We observe that queueing filters do not necessarily behave better than their 'vanilla' counterparts, especially on large sliding windows. This can be interpreted by the fact that the DDPs were optimised for infinite sliding windows, and as such operate better than their queueing equivalent on large sliding windows.
 
 \section{Adversarial Resistance}
 \label{sec:adversarial}
