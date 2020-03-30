@@ -33,16 +33,16 @@
 \begin{abstract}
 	Duplicate detection is the problem of identifying whether a given item has previously appeared in a (possibly infinite) stream of data, when only a limited amount of memory is available. 
 
-	Building on the Bloom filter \cite{bloom_spacetime_1970}, an early data structure amenable to duplicate detection, several generalisations and variants were proposed tthat reduce error rates while maintaining constant memory. 
+	Building on the Bloom filter \cite{bloom_spacetime_1970}, an early data structure amenable to duplicate detection, several generalizations and variants were proposed that reduce error rates while maintaining constant memory. 
 	
-	Unfortunately the infinite stream setting is ill-posed, and error rates of duplicate detection filters turn out to be heavily constrained: as a consequence they appear to provide no advantage, asymptotically, over a random biased coin toss \cite{10.1145/3297280.3297335}.
+	Unfortunately the infinite stream setting is ill-posed, and error rates of duplicate detection filters turn out to be heavily constrained: as a consequence they appear to provide no advantage, asymptotically, over a biased coin toss \cite{10.1145/3297280.3297335}.
 
 	Both as a better-behaved setting and as a construction technique, a
 	\emph{windowed} variant of the duplicate detection problem was 
-	introduced in \cite{She08,Yoo10}, which consists in finding duplicate 
+	introduced in \cite{She08,Yoo10} which consists in finding duplicate 
 	entries amongst the last $w$ elements of the stream for a fixed integer $w$. 
 
-	In this paper we formalise this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
+	In this paper we formalize this setting, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
 	
 	We also analyse the security of our filters in an adversarial setting. 
 \end{abstract}
@@ -89,18 +89,18 @@ Unfortunately any solution to this problem faces a phenomenon called \enquote{sa
 This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits.  
 
 \subsection{Contributions}
-In this paper, we start from a naïve solution for the wDDP to then derive bounds for when it can be solved within $M$ bits of memory, up to a window size $w_\text{max}$, in constant time. We then introduce a generalisation of the naïve solution, and study its error rate. We show that this construction, which we call Short Hash Filter (SHF), can push the value $w_\text{max}$ further while operating at being constant time --at the cost of some errors. If allowing for linear time, we also provide a better alternative, the Compact Short Hash Filter (CSHF).
+In this paper, we start from a naïve solution for the wDDP to then derive bounds for when it can be solved within $M$ bits of memory, up to a window size $w_\text{max}$, in constant time. We then introduce a generalization of the naïve solution, and study its error rate. We show that this construction, which we call Short Hash Filter (SHF), can push the value $w_\text{max}$ further while operating in constant time --- at the cost of some errors. We also provide a different tradeoff, the Compact Short Hash Filter (CSHF), which uses fewer memory but operates in linear time.
 
 Unfortunately, for $w > w_\text{max}$ the performance of these algorithms degrade very rapidly. We therefore turn our attention to existing data structures designed for the \enquote{non-windowed} setting. We show that some of them outperform dedicated data structures, including SHF/CSHF, in the $w > w_\text{max}$ regime.
 
 We then introduce the \enquote{queuing construction}, a black box transformation of non-windowed data structures into windowed ones, that improves their performance in the wDDP setting.
 
-Finally, we provide an analysis of our queueing construction's resistance to adversarial streams. (Section~\ref{sec:adversarial}).
+Finally, we provide an analysis of our queueing construction's resistance to adversarial streams.
 
 \subsection{Related work}\label{sub:related}
-The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}. However, several variations exist and describe incompatible situations, such as \cite{shtul2020agepartitioned}. Instead, the wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
+The notion of sliding window was, as far as we know, first introduced in \cite{10.1145/1060745.1060753}; but several variations exist that are incomparable to one another (e.g. \cite{shtul2020agepartitioned}). The wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
 
-The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a construction which we generalise and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
+The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a construction which we generalize and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
 
 \section{Duplicate Detection and Filter Saturation}
 \label{sec:dudefisa}
@@ -389,7 +389,10 @@ This bound is useful for several reasons, notably it provides an estimation of h
 	\end{equation}
 	for any $n > M$.
 \end{theorem}
-In particular, the asymptotic error rate $E_\infty$ satisfies $E_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|$.
+In particular, the asymptotic error rate $E_\infty$ satisfies 
+\begin{equation*}
+	E_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|.
+\end{equation*}
 
 \begin{proof}
 	By definition, a perfect filter has the lowest possible error rate.
@@ -726,7 +729,7 @@ If numerically solving the equation for individual cases is feasible, it seems u
 %\end{proof}
 
 
-\section{Queuing filters from existing DDFs}
+\subsection{Queuing filters from existing DDFs}
 \label{sec:subfilter-select}
 \label{sec:optimal_ddf}
 Our queuing construction relies on a choice of subfilters. A first observation 
