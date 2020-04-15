@@ -51,14 +51,14 @@ Duplicate detection is the problem of identifying whether a given item has previ
 
 %Building on the Bloom filter \cite{bloom_spacetime_1970}, an early data structure amenable to duplicate detection, several generalizations and variants were proposed that reduce error rates while maintaining constant memory. 
 
-Unfortunately the infinite stream setting is ill-posed, and error rates of duplicate detection filters turn out to be heavily constrained.%: as a consequence they appear to provide no advantage, asymptotically, over a biased coin toss \cite{10.1145/3297280.3297335}.
+Unfortunately the infinite stream setting is ill-posed, and error rates of duplicate detection filters turn out to be heavily constrained: consequently they appear to provide no advantage, asymptotically, over a biased coin toss \cite{10.1145/3297280.3297335}.
 
 %Both as a better-behaved setting and as a construction technique, a
 %\emph{windowed} variant of the duplicate detection problem was 
 %introduced in \cite{She08,Yoo10} which consists in finding duplicate 
-%entries amongst the last $w$ elements of the stream for a fixed integer $w$. 
+%entries amongst the last $w$ e	lements of the stream for a fixed integer $w$. 
 
-In this paper we formalize the sliding window setting introduced by  \cite{She08,Yoo10}, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
+In this paper we formalize the sliding window setting introduced by \cite{She08,Yoo10}, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
 
 We also analyse the security of our filters in an adversarial setting. 
 \keywords{TODO}

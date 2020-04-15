@@ -32,7 +32,7 @@ Unfortunately any solution to this problem will necessary encounter a phenomenon
 This is problematic on two grounds: it makes the comparison of several algorithms difficult (since they all asymptotically behave in that fashion), and the unavoidable saturation ruins any particular design's merits. As such, it is more interesting to focus on wDDP rather than DDP.
 
 \subsection{Contributions}
-In this paper, we start from a naïve solution for the wDDP to then derive bounds for when it can be solved within $M$ bits of memory, up to a window size $w_\text{max}$, in constant time. We then introduce a generalization of the naïve solution, and study its error rate. We show that this construction, which we call Short Hash Filter (SHF), can push the value $w_\text{max}$ further while operating in constant time --- at the cost of some errors. %We also provide a different tradeoff, the Compact Short Hash Filter (CSHF), which uses fewer memory but operates in linear time.
+In this paper, we start from a naïve solution for the wDDP to then derive bounds for when it can be solved within $M$ memory bits, up to a window size $w_\text{max}$, in constant time. We then introduce a generalization of the naïve solution, and study its error rate. We show that this construction, which we call Short Hash Filter (SHF), can push the value $w_\text{max}$ further while operating in constant time --- at the cost of some errors. %We also provide a different tradeoff, the Compact Short Hash Filter (CSHF), which uses fewer memory but operates in linear time.
 
 Unfortunately, for $w > w_\text{max}$ the performance of SHF degrades very rapidly. We therefore turn our attention to existing data structures designed for the \enquote{non-windowed} setting. We show that some of them outperform dedicated data structures, including SHF, in the $w > w_\text{max}$ regime.
 
@@ -58,7 +58,7 @@ We usually consider the situations where the available memory is too small for p
 An element $e_j$ is a duplicate in $E$ over the sliding window $w$, and we note $e_i \wdup E$ if there exists $j-w \leq i < j$ such that $e_i = e_j$. Otherwise we note $e_i \notwdup E$, and we say $e_i$ is unseen over $w$.
 A false positive over $w$ is an element $e\notwdup E$ which is classified as a duplicate, and a false negative is an element $e\wdup E$ which is classified as a not-duplicate.
 
-For a filter, the probability of false positive ($\FP^w_i$) is the probability that after $i$ insertions, the \emph{unseen} element $e_i\notwdup E$ is a false positive over $w$. The false positive rate $\FPR^w_i$ is the number of false positives divided by the number of unseen elements in E\footnote{We observe that $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly for $\FNR^w_n$.}. We similarly define the false negative probability $\FN^w_i$, and the false negative rate $\FNR^w_i$.
+For a filter, the false positive probability ($\FP^w_i$) is the probability that after $i$ insertions, the \emph{unseen} element $e_i\notwdup E$ is a false positive over $w$. The false positive rate $\FPR^w_i$ is the number of false positives divided by the number of unseen elements in E\footnote{We observe that $\FPR^w_n = \frac{1}{n}\sum_{i=1}^n \FP^w_i$, and similarly for $\FNR^w_n$.}. We similarly define the false negative probability $\FN^w_i$, and the false negative rate $\FNR^w_i$.
 
 
 
@@ -112,13 +112,13 @@ For a filter, the probability of false positive ($\FP^w_i$) is the probability t
 However, this optimal filter requires that the size of $\Gamma$ is known in advance. The dependence on $\log_2 |\Gamma|$ can be dropped, at the cost of allowing errors.
 
 \begin{restatable}{thm}{shf}\label{thm:SHF}
-	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the wDDP can be solved with almost no error using $M$ bits of memory.
+	Let $w \in \mathbb N$. Let $M \simeq 2w\log_2w$, then the wDDP can be solved with almost no error using $M$ memory bits.
 	
 	More precisely, it is possible to create a filter of $M$ bits with an FN of $0$, an FP of $1 - (1-\frac1{w^2})^w \sim \frac 1w$, and a time complexity of $O(w)$.
 	
 	Using $M \simeq 5w\log_2 w$ bits of memory, a constant-time filter with the same error rate can be constructed.
 \end{restatable}
-Note that we only consider the probability of false positive after the filter has inserted at least $w$ elements, i.e., once the filter is full and has reached a stationary regime.
+Note that we only consider the false positive probability after the filter has inserted at least $w$ elements, i.e., once the filter is full and has reached a stationary regime.
 
 
 %\begin{proof}
@@ -139,13 +139,13 @@ When $\log_2|\Gamma| > 5 \log_2 w$ this DDF outperforms the naïve strategy\foot
 
 %\section{Short Hash Filter}
 \subsection{Short Hash Filter Algorithm}
-The approximate filter we described uses hashes of size $2\log_2(w)$ for a given sliding window $w$. However, this hash size is arbitrary, and while it guarantees a very low error rate, it can be changed. More importantly, in some practical cases the maximal amount of available memory is fixed beforehand. Fixing the memory is also more practical for benchmarking data structures, as it gives the guarantee that all filters operate under the same conditions.
+The approximate filter we described uses hashes of size $2\log_2(w)$ for a given sliding window $w$. However, this hash size is arbitrary, and while the current hash size guarantees a very low error rate, it can be changed. More importantly, in some practical cases the maximal amount of available memory is fixed beforehand. Fixing the memory is also more practical for benchmarking data structures, as it gives the guarantee that all filters operate under the same conditions.
 
-This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}. The implementation relies on a double-ended queue or a ring buffer, which allows pushing at beggining of a queue and popping at the end in constant time.
+This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}. The implementation relies on a double-ended queue or a ring buffer, which allows pushing at beginning of a queue and popping at the end in constant time. A variant is described in Appendix~\ref{app:CSHF}.
 
 
 \begin{algorithm}
-	\caption{SHF Setup, Lookup and Insert}\label{alg:SHF}
+	\caption{SHF \textsf{Setup}, \textsf{Lookup} and \textsf{Insert}}\label{alg:SHF}
 	
 	\begin{algorithmic}[1]
 	\Function{Setup}{$M, w$}
@@ -153,39 +153,38 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 	\State $h \gets$ hash function of codomain size $\lfloor \frac M{2w} - \frac 12 \log_2 w \rfloor$
 	\State $Q \gets \emptyset$ \Comment $Q$ is a queue of elements of size $h$
 	\State $D \gets \emptyset$ \Comment $D$ is a dictionary $h \Rightarrow$  counter (of max value $w$)
-	
-%	\State\Return filter
 	\EndFunction 
 	\end{algorithmic}
 
 	\begin{multicols}{2}
 	\begin{algorithmic}[1]
-	\item[]
+		\Function{Insert}{$e$}
+		\State $Q.\mathsf{Push\_Front}(h(e))$
+		\State $D[h(e)]$++
+		
+		\If{$Q.\mathsf{length}() > w$}
+		\State $h' \gets Q.\mathsf{Pop\_back}()$
+		\State $D[h']$-{}-
+		\If{$D[h'] = 0$}
+		\State Erase key $D[h']$
+		\EndIf
+		\EndIf
+		\EndFunction
+	\end{algorithmic}	
+		
+	\begin{algorithmic}[1]
 	\item[]
 	\Function{Lookup}{$e$}
 	\If{$D[h(e)] > 0$}
 	\State \Return \DUPLICATE
-	\EndIf
+	\Else
 	\State \Return \UNSEEN
+	\EndIf
 	\EndFunction
-	\item[]
 	\item[]
 \end{algorithmic}
 
-\begin{algorithmic}[1]
-	\Function{Insert}{$e$}
-	\State $Q.\mathsf{Push\_Front}(h(e))$
-	\State $D[h(e)]$++
-	
-	\If{$Q.\mathsf{length}() > w$}
-	\State $h' \gets Q.\mathsf{Pop\_back}()$
-	\State $D[h']$-{}-
-	\If{$D[h'] = 0$}
-	\State Erase key $D[h']$
-	\EndIf
-	\EndIf
-	\EndFunction
-\end{algorithmic}
+
 	\end{multicols}
 \end{algorithm}
 
@@ -238,7 +237,7 @@ Let $w> 0$ be a window size and $M > 0$ the available memory.
 
 %\paragraph{Remark:} A CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
 \paragraph{Saturation.}
-SHF and have strictly increasing error rates, which reach a threshold of $1/2$ for some maximum window size $w_\text{max}$. Beyond this value, these filters saturate extremely quickly: in other words, most SHF will either have an error rate of $0$ or $1$.
+SHF has strictly increasing error rates, which reach a threshold of $1/2$ for some maximum window size $w_\text{max}$. Beyond this value, these filters saturate extremely quickly: in other words, most SHF will either have an error rate of $0$ or $1$.
 
 An illustration of this phenomenon can be seen in Figure~\ref{fig:shorts}, 
 which shows the error rates for SHF with $M=10^5$, against 
@@ -249,7 +248,7 @@ a uniformly random stream of $18$-bit elements ($|\Gamma| = 2^{18}$). The benchm
 \begin{minipage}{.5\textwidth}
 	\centering
 	\input{graphs/bench_shorts.tex}
-	\caption{Error rates of SHFs and CSHFs for $M = 10^5$ bits, for varying window sizes $w$.}\label{fig:shorts}
+	\caption{Error rates of SHFs for $M = 10^5$ bits, for varying window sizes $w$.}\label{fig:shorts}
 \end{minipage}
 \hfill
 \begin{minipage}{.5\textwidth}
@@ -279,15 +278,15 @@ As said in the introduction, it has been proven \cite{10.1145/3297280.3297335} t
 This bound is useful for several reasons, notably it provides an estimation of how close to optimality existing filters are.
 
 \begin{restatable}{thm}{asymptoticSaturation}\label{thm:asymptoticSaturation}
-	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $E_n = \FP_n + \FN_n$ satisfies
+	Let $E$ be a stream of $n$ elements uniformly selected from an alphabet of size $|\Gamma|$. For any DDF using $M$ bits of memory, the error probability $EP_n = \FP_n + \FN_n$ satisfies
 $
-	E_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
+	EP_n \geq 1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n} 
 $
 	for any $n > M$.
 \end{restatable}
 In particular, the asymptotic error rate $E_\infty$ satisfies 
 $
-	E_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|.
+	EP_\infty \geq \left(1 - \frac{1}{|\Gamma|}\right)^{M} \approx 1 - M/|\Gamma|.
 $
 
 %\begin{proof}
@@ -321,10 +320,10 @@ Note, as highlighted in the proof, that this bound is \emph{not tight}: better b
 We now evaluate the saturation rate for several DDFs, in the original DDP setting (without sliding window). Parameters are chosen to yield equivalent memory footprints and were taken from \cite{10.1145/3297280.3297335}, namely:
 %
 \begin{itemize}
-	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint.
-	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$
-	\item Cuckoo Filter \cite{Fan14}, cells containing 1 element of 3 bits each
-	\item Stable Bloom Filter (SBF) \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02
+	\item QHT \cite{10.1145/3297280.3297335}, 1 bucket per row, 3 bits per fingerprint;
+	\item SQF \cite{Dut13}, 1 bucket per row, $r = 2$ and $r' = 1$;
+	\item Cuckoo Filter \cite{Fan14}, cells containing 1 element of 3 bits each;
+	\item Stable Bloom Filter (SBF) \cite{Den06}, 2 bits per cell, 2 hash functions, targeted FPR of 0.02.
 %	\item $A2$ Filter \cite{Yoo10}, targeted FPR of $0.1$ on the sliding window.
 %	\item Block-Decaying Bloom Filter (b\_DBF) \cite{She08}, sliding window of 6000 elements.
 \end{itemize}
@@ -361,7 +360,7 @@ Nevertheless, we will now discuss the queuing construction, which allow us to bu
 	\begin{minipage}{.7\textwidth}
 	\centering
 	\input{fig/queuef.tex}
-	\caption{Architecture of the queuing filter. The filter is composed of $L$ subfilters $\mathcal F$, each containing up to $c$ elements. Once the newest subfilter has inserted $c$ elements in its structure, the oldest one is expired. As such, it is dropped and a new one is created and put under population at the beginning of the queue. In this example, the sub-sliding window of $\mathcal F_1$ is $(e_{m-2}, e_{m-3}, e_{m-4})$.} \label{fig:scheme}
+	\caption{Architecture of the queuing filter, which consists of $L$ subfilters $\mathcal F_i$, each containing up to $c$ elements. Once the newest subfilter has inserted $c$ elements in its structure, the oldest one expires. As such, the latter is dropped and a new one is created and put under population at the beginning of the queue. In this example, the sub-sliding window of $\mathcal F_1$ is $(e_{m-2}, e_{m-3}, e_{m-4})$.} \label{fig:scheme}
 	\end{minipage}
 }}
 \end{figure}
@@ -374,7 +373,7 @@ A scheme describing our structure is detailed in Figure~\ref{fig:scheme}.
 \subsection{The queuing construction}
 
 \paragraph{Principle of operation.}
-Let $\mathcal F$ be a DDF. Rather than allocating the whole memory to $\mathcal F$, we will create $L$ copies of $\mathcal F$, each using a fraction of the available memory. Each of these \emph{subfilters} as a limited timespan, and is allowed up to $c$ insertions. The subfilters are organised in a queue.
+Let $\mathcal F$ be a DDF. Rather than allocating the whole memory to $\mathcal F$, we will create $L$ copies of $\mathcal F$, each using a fraction of the available memory. Each of these \emph{subfilters} has a limited timespan, and is allowed up to $c$ insertions. The subfilters are organised in a queue.
 
 When inserting a new element in the queuing filter, it is inserted in the topmost subfilter of the queue. After $c$ insertions, a new empty filter is added to the queue, and the oldest subfilter is popped and erased.
 
@@ -390,7 +389,7 @@ After $c$ insertions, the last filter of the queue is dropped, and a new (empty)
 We give a brief pseudocode for the queuing filter's functions \textsf{Lookup} and \textsf{Insert}, as well as a \textsf{Setup} function for initialisation, in Algorithm~\ref{alg:queuing}. We introduced for simplicity a constructor $\mathcal F.\textsf{Setup}$ that takes as input an integer $M$ and outputs an initialized empty filter $\mathcal F$ of size at most $M$. Here \texttt{subfilters} is a FIFO that has a \texttt{pop} and \texttt{push\_first} operations, which respectevely removes the last element in the queue or inserts a new item in first position.\footnote{Two standard ways to implement this are a double-ended queue (deque) and a ring buffer.}   
 
 \begin{algorithm}[]
-	\caption{Queuing Filter Setup, Lookup and Insert}\label{alg:queuing}
+	\caption{Queuing Filter \textsf{Setup}, \textsf{Lookup} and \textsf{Insert}}\label{alg:queuing}
 	
 	\begin{algorithmic}[1]
 	\Function{Setup}{$\mathcal F, M, L, c$}
@@ -411,7 +410,7 @@ We give a brief pseudocode for the queuing filter's functions \textsf{Lookup} an
 	\Function{Lookup}{$e$}
 		\For{$i$ from $0$ to $L-1$}
 			\If{subfilters[i]$.\mathsf{Lookup(e)}$}
-				\State \Return $\DUPLICATE$
+				\State \Return $\DUPLICATE$			
 			\EndIf
 		\EndFor
 		\State \Return \UNSEEN
@@ -422,7 +421,7 @@ We give a brief pseudocode for the queuing filter's functions \textsf{Lookup} an
 	\begin{algorithmic}[1]
 	\Function{Insert}{$e$}
 		\State subfilters[0]$.\mathsf{Insert}(e)$
-		\State counter $\gets$ counter + 1 
+		\State counter$++$
 		\If{counter == $c$}
 			\State subfilters.pop()
 			\State subfilters.push\_first($\mathcal F.\textsf{Setup}(m)$)
@@ -444,18 +443,18 @@ Therefore, in the steady-state regime, the queuing filter holds information abou
 
 As a result, if $w < cL$, the queuing filter can hold information about \emph{more than $w$ elements}.
 
-\subsubsection{Probability of False Positive}
+\subsubsection{False Positive Probability}
 
 \begin{restatable}{thm}{pfpQueue}
 	\label{thm:queue-pfp}
-	 Let $\FP_{\mathcal Q, m}^w$ be the probability of false positive %(def. \ref{def:pfp-pfn})
+	 Let $\FP_{\mathcal Q, m}^w$ be the false positive probability%(def. \ref{def:pfp-pfn})
 	 of $\mathcal Q$ after $m > w$ insertions, over a sliding window of size $w = cL$, we have \\
 	$$%\begin{equation}
 		\label{eq:queue-pfp}
 		\FP_{\mathcal Q, m}^w = 1 - \left(1 - \FP_{\mathcal F,c}\right)^{L-1} \left(1 - \FP_{\mathcal F, m \bmod c }\right)
 	$$ %\end{equation}
-	where $\bmod$ is the modulo operator and 
-	 $\FP_{\mathcal F,m}$ is the probability of false positive of a subfilter $\mathcal F$ after $m$ insertions.
+	where %$\bmod$ is the modulo operator and 
+	 $\FP_{\mathcal F,m}$ is the false positive probability of a subfilter $\mathcal F$ after $m$ insertions.
 \end{restatable}
 
 %\begin{proof}
@@ -463,23 +462,24 @@ As a result, if $w < cL$, the queuing filter can hold information about \emph{mo
 %	
 %	Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is \emph{not} a false positive when all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN, i.e., when $e^\star$ is not a false positive for each subfilter.
 %	
-%	Each subfilter has undergone $c$ insertions, safe for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
+%	Each subfilter has undergone $c$ insertions, except for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
 %\end{proof}
 
 \paragraph{Remark.} In the case $w < cL$, as mentioned previously, there is a non-zero probability that $e^\star$ is in the last subfilter's memory, despite not belonging to the sliding window. 
 	
 Assuming a uniformly random input stream, and writing $\delta = cL - w$, the probability that $e^\star$ has occurred in $\{e_{m-cL}, \dotsc e_{m-w+1}\}$ is $1-\left(1-\frac1{|\Gamma|}\right)^\delta$. For large $|\Gamma|$ (as is expected to be the case in most applications), this probability is about $\frac{\delta}{|\Gamma|} \ll 1$. Hence, we can neglect the probability that $e^\star$ is present in the filter, and we consider the result of Theorem~\ref{thm:queue-pfp} to be a very good approximation even when $w < cL$.
 
-\subsubsection{Probability of False Negative}\label{sub:fnr}
+\subsubsection{False Negative Probability}\label{sub:fnr}
 \begin{restatable}{thm}{pfnQueue}
 	\label{thm:queue-pfn}
-	Let $\FN_{\mathcal Q, m}^w$ be the probability of false negative of $\mathcal Q$ after $m > w$ insertions on a sliding window of size $w = cL$, we have
+	Let $\FN_{\mathcal Q, m}^w$ be the false negative probability of $\mathcal Q$ after $m > w$ insertions on a sliding window of size $w = cL$, we have
 	$$%\begin{equation}
 	\FN_{\mathcal Q, m}^w 
 	=  u_c^{L-1} u_{m \bmod c}
 	$$%\end{equation}
-	where $\bmod$ is the modulo operator, and we have introduced the short-hand notation $u_\eta= p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$ where 
-	$\FN_{\mathcal F,\eta}$ (resp. $\FP_{\mathcal F, \eta}$) is the probability of false negative (resp. false positive) of the subfilter $\mathcal F$ after $\eta$ insertions, and
+	where %$\bmod$ is the modulo operator, and
+	we have introduced the short-hand notation $u_\eta= p_{\eta}\FN_{\mathcal F,\eta} + \left(1-p_{\eta}\right)\left(1-\FP_{\mathcal F,\eta}\right)$ where 
+	$\FN_{\mathcal F,\eta}$ (resp. $\FP_{\mathcal F, \eta}$) is the false negative probability (resp. false positive) of the subfilter $\mathcal F$ after $\eta$ insertions, and
 	$%\begin{equation*}
 		p_\eta = \frac{1-\left(1-\frac 1{|\Gamma|}\right)^\eta}{1-\left(1-\frac 1{|\Gamma|}\right)^w} \approx \frac{\eta}{w}.
 	$%\end{equation*}
@@ -625,7 +625,7 @@ Applying the queuing construction to DDFs from the literature, we get new filter
 
 In Section~\ref{sec:optimal_ddf} we suggested the heuristic that the DDFs with the least saturation rate in the DDP would yield the best (error-wise) queuing filter for the wDDP. This heuristic is supported by results, summarized in Figure~\ref{tab:comparing_queuing}. For this benchmark we used the following parameters: uniform stream from an alphabet of size $|\Gamma| = 2^{18}$, memory size $M=100,000$ bits, sliding window of size $w = 10,000$, and we measure the error rate (sum of $\FNR^w$ and $\FPR^w$).
 
-A very interesting observation is that $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer (see Appendix~\ref{app:finite}). This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
+A surprising observation is that when $Lw$ approaches the size of the stream, there is a drop in the error. This is an artifact due to the finite size of our simulations; the stream should be considered infinite, and this drop disappears as the simulation is run for longer (see Appendix~\ref{app:finite}). This effect also alters the error rates for smaller window sizes, albeit much less, and we expect that filter designers care primarily about the small window regime. Nevertheless a complete understanding of this effect would be of theoretical interest, and we leave the study of this phenomenon for future work.
 
 
 \begin{figure}[t]
@@ -656,7 +656,7 @@ A very interesting observation is that $Lw$ approaches the size of the stream, t
 %\end{table}
 
 \paragraph{The number of subfilters}\label{sub:L_bench}
-The number of subfilters $L$ is an important parameter in the queuing construction, as it affects the filter's error rate in a nontrivial way. An illustration of this dependence is shown in Figure~\ref{fig:bench_l} which plots the error rate of a queueing QQHTD on an uniform stream of alphabet size $\Gamma = 2^{16}$, with $10^5$ elements in the stream, on various sliding window sizes. 
+The number of subfilters $L$ is an important parameter in the queuing construction, as it affects the filter's error rate in a nontrivial way. An illustration of this dependence is shown in Figure~\ref{fig:bench_l} which plots the error rate of a queueing QHT on an uniform stream of alphabet size $\Gamma = 2^{16}$, with $10^5$ elements in the stream, on various sliding window sizes. 
 
 We observe that the optimal value for $L$ does indeed depend on the desired sliding window. However, other experiments on alphabets of other sizes yield very similar results, hence validating the observation made in Section~\ref{sec:optimising} that the optimal number of subfilters does not depends on the alphabet, at least in first approximation.
 
@@ -676,13 +676,13 @@ We observe that queueing filters do not necessarily behave better than their 'va
 
 As DDFs have numerous security applications, we now discuss the queuing construction from an adversarial standpoint. We consider an adversarial game in which the attacker wants to trigger false positives or false negatives over the sliding window. One motivation for doing so is causing cache saturation or denial of service by forcing cache misses, triggering false alarms or crafting fradulent transactions without triggering fraud detection systems.
 
-In order to create a realistic adversary model, we assume like in \cite{DBLP:journals/corr/abs-1709-08920} that the adversary does not have access to the internal memory representation of the filter. Nonetheless, after every insertion she knows whether the inserted element was detected as a duplicate or not. 
+To create a realistic adversary model, we assume like in \cite{DBLP:journals/corr/abs-1709-08920} that the adversary does not have access to the filter's internal memory. Nonetheless, after every insertion she knows whether the inserted element was detected as a duplicate or not. 
 
 We first recall the definition of an adversarial game, adapted to our context.
 \begin{definition}
 	An adversary $\mathcal A$ feeds data to a sliding window DDF $\mathcal Q$, and for each inserted element, $\mathcal A$ knows whether $\mathcal Q$ answers $\DUPLICATE$ or $\UNSEEN$, but has not access to $\mathcal Q$'s internal state $\mathcal M$. The game has two distinct parts.
 \begin{itemize}
-	\item In the first part, $\mathcal A$ can feed up to $n$ elements to $\mathcal Q$ and learn $\mathcal Q$'s response for each insertion.
+	\item In the first part, $\mathcal A$ can feed up to $n$ elements to $\mathcal Q$ and learns $\mathcal Q$'s response for each insertion.
 	\item In the second part, $\mathcal A$ sends a unique element $e^\star$.
 \end{itemize} 
  $\mathcal A$ wins the $n$-false positive adversarial game (resp. $n$-false negative adversarial game) if and only if $e^\star$ is a false positive (resp. a false negative).
@@ -693,7 +693,7 @@ Variants of these games over a sliding window of size $w$ are immediate.
 \subsubsection{False positive and false negative resistance}
 
 \begin{definition}[Adversarial False Positive Resistance]
-	We say that a DDF $\mathcal F$ is $(p, n)$-\emph{resistant to adversarial false positives} if no polynomial-time probabilistic (PPT) adversary $\mathcal A$ can win the $n-$false positive adversarial game with probability more than $p$.  
+	We say that a DDF $\mathcal F$ is $(p, n)$-\emph{resistant to adversarial false positives} if no polynomial-time probabilistic (PPT) adversary $\mathcal A$ can win the $n-$false positive adversarial game with probability greater than $p$.  
 \end{definition}
 Note that if $\mathcal F$ is $(p,n)$-resistant, then it is $(p, m)$-resistant for all $m < n$.
 
@@ -706,7 +706,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 	
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false positive attacks and $cL \leq w$, then $\mathcal Q$ is $(1-(1-p)^L, w)$-resistant to adversarial false positive attacks on a sliding window of size $w$.
 	
-	If $cL > w$, the adversary has a probability of success of at least $1-(1-p)^L$.
+	If $cL > w$, the adversary has a success probability of at least $1-(1-p)^L$.
 \end{restatable}
 
 %\begin{proof}
@@ -725,7 +725,7 @@ We define similarly the notion of being \emph{resistant to adversarial false neg
 	
 	If $\mathcal F$ is $(p, c)$-resistant to adversarial false negative attacks, then $\mathcal A$ can win the adversarial game on the sliding window $w$ with probability at least $p^L$.
 	
-	Furthermore, for $q$ the lower bound on the probability of false positive $\FP_{\mathcal F,c}$ for a given stream, if $w \leq (L-1)c$ then $\mathcal Q$ is $(\min(1 - q, p)^{L-1}p, w)$-resistant to false negative attacks on the sliding window $w$.
+	Furthermore, for $q$ the lower bound on the false positive probability $\FP_{\mathcal F,c}$ for a given stream, if $w \leq (L-1)c$ then $\mathcal Q$ is $(\min(1 - q, p)^{L-1}p, w)$-resistant to false negative attacks on the sliding window $w$.
 	On the other hand if $w > (L-1)c$ then $\mathcal Q$ is  $(\max(1 - q, p)^{L}, w)$-resistant to false negative attacks on the sliding window $w$.
 \end{restatable}
 

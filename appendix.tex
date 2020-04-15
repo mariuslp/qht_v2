@@ -53,6 +53,68 @@ It is also possible to run simulations for different alphabet sizes $\Gamma$, wh
 \section{Filters vs queued filters (complement)}\label{app:improvement}
 We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Filter, as well as the SBF relatively to the queueing SBF. The results are given in Figure~\ref{fig:appendix_improvement}.
 
+
+\section{Compact Hash Short Filter}\label{app:CSHF}
+Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, one stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
+
+%\begin{algorithm}[!h]
+%	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Setup}{$\mathcal M, w$}
+%		\Comment $M$ is the available memory, $w$ the size of the sliding window
+%		\State $h \gets$ hash function of codomain size $\lfloor \frac Mw \rfloor$
+%		\State $Q \gets \emptyset$ \Comment $Q$ is a queue of elements of size $h$
+%		\State\Return filter
+%		\EndFunction 
+%		\item[]
+%	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Lookup}{$e$}
+%		\State \Return $h(e) \in Q$ 
+%		\EndFunction
+%		\item[]
+%	\end{algorithmic}
+%	
+%	\begin{algorithmic}[1]
+%		\Function{Insert}{$e$}
+%		\State $Q.\mathsf{Push\_Front}(h(e))$
+%		
+%		\If{$Q.\mathsf{length}() > w$}
+%			\State $h' \gets Q.\mathsf{Pop\_back}()$
+%		\EndIf
+%		\EndFunction
+%	\end{algorithmic}
+%\end{algorithm}
+
+\paragraph{Error Rate.}
+Let $w> 0$ be a window size and $M > 0$ the available memory.
+
+%We write $\FN^w_\text{SHF}$ the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_\text{SHF}$.%, $\FN^w_\text{CSHF}$, $\FP^w_\text{CSHF}$. 
+
+\begin{restatable}{thm}{fprSHF}\label{thm:fprCHF}	
+	$\FN_\text{CSHF}^w  = 0$  and $\FP_\text{CSHF}^w = 1 - \left(1 - 2^{-M/w}\right)^w$
+\end{restatable}
+
+\begin{proof}
+	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. A CSHF has fingerprints of size $h' = \frac Mw$.
+\end{proof}
+
+\paragraph{Remark:} A CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
+
+\paragraph{Saturation.}
+Simlarly to SHF, CSHF saturates quickly over a certain $w_\text{max}$. We compare SHF and CSHF saturations in Figure~\ref{fig:app_shorts}.
+
+
+\begin{figure}[t]
+		\centering
+		\input{graphs/bench_shorts_both.tex}
+		\caption{Error rates of SHFs and CSHFs for $M = 10^5$ bits, for varying window sizes $w$.}\label{fig:app_shorts}
+\end{figure}
+
+Experimentally, we get $w_\text{max}^\text{CSHF} = 0.0627 M + 443$ ($r^2 = 0.9981$).
+
 \section{Proofs}\label{app:proofs}
 In this appendix, we give the proofs of all theorems stated in the paper. For the sake of convenience, each theorem is restated before giving its proof.
 
@@ -68,11 +130,11 @@ In this appendix, we give the proofs of all theorems stated in the paper. For th
 	
 	When an element $e$ is inserted in the DDF, $e$ is stored and $D[e]$ is incremented (if the key $e$ did not exist in $D$, it is created first, and
 	$D[e]$ is set to $1$). In order to keep the number of stored elements to $w$, 
-	we discard the oldest element $e_\text{last}$ in $Q$. As we do so, we also decrement $D[e_\text{last}]$, and if $D[e_{last}] = 0$ the key is deleted from $D$. The whole insertion procedure is therefore performed in constant time.
+	we discard the oldest element $e_\text{last}$ in $Q$. As we do so, we also decrement $D[e_\text{last}]$, and if $D[e_{\text{last}}] = 0$ the key is deleted from $D$. The whole insertion procedure is therefore performed in constant time.
 	
 	Lookup of an element $e^\star$ is simply done by looking whether the key $D[e^\star]$ exists, which is done in constant time.
 	
-	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w (\log_2 |\Gamma| + \log_2 w)$ (as the dictionary cannot have more than $w$ keys at the same time, a dictionary key occupies $\log_2 |\Gamma|$ bits and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus a requirement of $w (\log_2(w) + 2\log_2(|\Gamma|))$ bits for this DDF to work.
+	The queue  size is $w\log_2 |\Gamma|$, the dictionary size is $w (\log_2 |\Gamma| + \log_2 w)$ (as the dictionary cannot have more than $w$ keys at the same time, a dictionary key occupies $\log_2 |\Gamma|$ bits and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus a requirement of $w (\log_2(w) + 2\log_2(|\Gamma|))$ bits for this DDF to work.
 
 	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact account of how many times each element is present in the sliding window.
 \qed\end{proof}
@@ -111,13 +173,14 @@ Note that this solution has a time complexity of $O(w)$. Using an additional dic
 	
 	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
 	\begin{align*}
-		\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
-		& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
-		\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
+		\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)
+		 = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) \\
+		\FN_n &=  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p)
+			=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
 	\end{align*}
 	Hence, the error probability of the filter is
 	\begin{align*}
-		E_n 
+		EP_n 
 		& = \FN_n + p
 		=  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p
 		= 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
@@ -132,7 +195,7 @@ Note that this solution has a time complexity of $O(w)$. Using an additional dic
 	
 	Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is \emph{not} a false positive when all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN, i.e., when $e^\star$ is not a false positive for each subfilter.
 	
-	Each subfilter has undergone $c$ insertions, safe for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
+	Each subfilter has undergone $c$ insertions, except for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
 \qed\end{proof}
 
 \pfnQueue*
@@ -152,12 +215,12 @@ In the second case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if a
 Finally, each event is weighted by the probability $p_c$ that $e^\star$ is in $\mathcal F_i$'s sub-sliding window:
 \begin{align*}
 	p_c 
-	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
-	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
-	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}\\
+	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]
+	 = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
+	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}
 %		\end{align*}\begin{align*}p_c
-	& = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
-	& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
+	 = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
+	p_c& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
 \end{align*}
 This concludes the proof.
 \qed\end{proof}
@@ -193,11 +256,11 @@ This concludes the proof.
 
 \begin{proof}
 	If $cL \leq w$, then information-theoretically the subfilters only have information on elements in the sliding window.
-	The probability of false positive for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$, which is strictly increasing with $\FP_{\mathcal F,c}$. Hence, the optimal solution is reached by to maximising the probability of false positive in each subfilter $\mathcal F_i$. By hypothesis the latter is bounded above by $p$ after $c$ insertions.
+	The false positive probability for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$, which is strictly increasing with $\FP_{\mathcal F,c}$. Hence, the optimal solution is reached by to maximising the false positive probability in each subfilter $\mathcal F_i$. By hypothesis the latter is bounded above by $p$ after $c$ insertions.
 	
-	On the other hand, if $cL > w$ then oldest filter holds information about elements that are not in the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
+	On the other hand, if $cL > w$ then the oldest filter holds information about elements that are not in the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
 	
-	After $w$ insertions, the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ probability of success. If, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the same reasoning as for when $cL \leq w$ still applies, hence we get the correspondig lower bound (which is, in this case, an equality).
+	After $w$ insertions, the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ success probability. If, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the same reasoning as for when $cL \leq w$ still applies, hence we get the correspondig lower bound (which is, in this case, an equality).
 \qed\end{proof}
 
 \fnrRes*
@@ -205,9 +268,9 @@ This concludes the proof.
 \begin{proof}
 	Let us first prove that a PPT adversary $\mathcal A$ can win the game with probability at least $p^L$.
 	For this, let us consider the adversarial game against the subfilter $\mathcal F$: after $c$ insertions from an aversarial stream $E_c$, $\mathcal A$ choses a duplicate $e^\star$ which will be a false negative with proability $p$.
-	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c \mid E_c \mid \cdots \mid E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a probability of success for $\mathcal A$ of $p^L$.
+	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c \mid E_c \mid \cdots \mid E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a success probability for $\mathcal A$ of $p^L$.
 	
-	Now, Let us prove the case where $w\leq (L-1)c$. In this case, at any time, $\mathcal Q$ remembers all elements from inside the sliding window. As we have seen in the previous example, the probability of success of $\mathcal A$ is strictly increasing with the probability of each subfilter to answer $\UNSEEN$. The probability of a subfilter to answer $\UNSEEN$ is:
+	Now, Let us prove the case where $w\leq (L-1)c$. In this case, at any time, $\mathcal Q$ remembers all elements from inside the sliding window. As we have seen in the previous example, the success probability of $\mathcal A$ is strictly increasing with the probability of each subfilter to answer $\UNSEEN$. The probability of a subfilter to answer $\UNSEEN$ is:
 	
 	\begin{itemize}
 		\item $\FN'_{\mathcal F,c}$ if $e^\star$ is in the subfilter's sub-sliding window;
