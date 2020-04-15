@@ -1,0 +1,83 @@
+% This is samplepaper.tex, a sample chapter demonstrating the
+% LLNCS macro package for Springer Computer Science proceedings;
+% Version 2.20 of 2017/10/04
+%
+\documentclass[runningheads]{llncs}
+%
+\input{preamble}
+%\usepackage{times}
+\usepackage[moderate]{savetrees}
+\usepackage{multicol}
+
+\usepackage{graphicx}
+
+% Several figures with different labels
+\usepackage{float}
+\restylefloat*{figure}
+
+% Used for displaying a sample figure. If possible, figure files should
+% be included in EPS format.
+%
+% If you use the hyperref package, please uncomment the following line
+% to display URLs in blue roman font according to Springer's eBook style:
+% \renewcommand\UrlFont{\color{blue}\rmfamily}
+
+
+\begin{document}
+%
+\title{Approaching Optimal Duplicate Detection in a Sliding Window}
+%
+%\titlerunning{Abbreviated paper title}
+% If the paper title is too long for the running head, you can set
+% an abbreviated paper title here
+%
+\author{Rémi Géraud--Stewart\inst{1} \and
+Marius Lombard-Platet\inst{1,2} \and
+David Naccache\inst{1}}
+%
+%\authorrunning{F. Author et al.}
+% First names are abbreviated in the running head.
+% If there are more than two authors, 'et al.' is used.
+%
+\institute{Département d'informatique de l'ENS, ENS, CNRS, PSL Research University, Paris, France \and
+Be-ys Research Lab, Clermont-Ferrand, France\\
+\email{\{first\}.\{last\}@ens.fr}
+}
+%
+\maketitle              % typeset the header of the contribution
+%
+\begin{abstract}
+Duplicate detection is the problem of identifying whether a given item has previously appeared in a (possibly infinite) stream of data, when only a limited amount of memory is available. 
+
+%Building on the Bloom filter \cite{bloom_spacetime_1970}, an early data structure amenable to duplicate detection, several generalizations and variants were proposed that reduce error rates while maintaining constant memory. 
+
+Unfortunately the infinite stream setting is ill-posed, and error rates of duplicate detection filters turn out to be heavily constrained.%: as a consequence they appear to provide no advantage, asymptotically, over a biased coin toss \cite{10.1145/3297280.3297335}.
+
+%Both as a better-behaved setting and as a construction technique, a
+%\emph{windowed} variant of the duplicate detection problem was 
+%introduced in \cite{She08,Yoo10} which consists in finding duplicate 
+%entries amongst the last $w$ elements of the stream for a fixed integer $w$. 
+
+In this paper we formalize the sliding window setting introduced by  \cite{She08,Yoo10}, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
+
+We also analyse the security of our filters in an adversarial setting. 
+\keywords{TODO}
+\end{abstract}
+%
+%
+%
+\input{article_content}
+%
+% ---- Bibliography ----
+%
+% BibTeX users should specify bibliography style 'splncs04'.
+% References will then be sorted and formatted in the correct style.
+%
+ \bibliographystyle{splncs04}
+\bibliography{bibli_short}
+%\bibliography{qhtv2}
+
+\appendix
+\input{appendix}
+
+\end{document}

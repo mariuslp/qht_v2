@@ -1,4 +1,4 @@
-	\begin{filecontents*}[overwrite]{b_qht.dat}
+	\begin{filecontents*}[overwrite]{graphs/b_qht.dat}
 w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 100 	24.29 	0 	24.29 	75.71 	3.57 	0.04
 111 	24.28 	0 	24.28 	75.72 	3.75 	0.05
@@ -83,7 +83,7 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	\end{filecontents*}
 
 
-\begin{filecontents*}[overwrite]{b_bdbf.dat}
+\begin{filecontents*}[overwrite]{graphs/b_bdbf.dat}
 w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 100 	0.02 	0 	0.02 	99.98 	80.54 	0.04
 111 	0.04 	0 	0.04 	99.96 	73.96 	0.05
@@ -147,7 +147,7 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 56582 	95.25 	0 	95.25 	4.75 	9.66 	18.9
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{b_a2.dat}
+\begin{filecontents*}[overwrite]{graphs/b_a2.dat}
 w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 100 	43.91 	0 	43.91 	56.09 	2.29 	0.04
 111 	43.91 	0 	43.91 	56.09 	2.4 	0.05
@@ -231,7 +231,7 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 97716 	37.07 	39.77 	76.84 	23.16 	21.31 	29.65
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{b_a22.dat}
+\begin{filecontents*}[overwrite]{graphs/b_a22.dat}
 w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 100 	0 	29.27 	29.27 	70.73 	83.52 	0.04
 112 	0 	27.07 	27.07 	72.93 	84.63 	0.05
@@ -295,17 +295,17 @@ w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 89125 	37.08 	38.06 	75.14 	24.86 	22.38 	27.58
 \end{filecontents*}
 		\begin{tikzpicture}
-	\begin{semilogxaxis}[xlabel = $w$, ylabel = $\FNR + \FPR$ $(\times 100)$, 
+	\begin{semilogxaxis}[width=\textwidth, xlabel = $w$, ylabel = $\FNR + \FPR$ $(\times 100)$, 
 		%legend pos = outer north east
 	legend style={at={(0.02,0.98)},anchor=north west}]
 
-	\addplot[color=red,mark=+] table[x=w,y=Error] {b_qht.dat};
+	\addplot[color=red,mark=+] table[x=w,y=Error] {graphs/b_qht.dat};
 \addlegendentry{QHT}
 
-	\addplot[color=blue,mark=triangle] table[x=w,y=Error] {b_bdbf.dat};
+	\addplot[color=blue,mark=triangle] table[x=w,y=Error] {graphs/b_bdbf.dat};
 \addlegendentry{b\_DBF}
 
-	\addplot[color=olive,mark=square] table[x=w,y=Error] {b_a22.dat};
+	\addplot[color=olive,mark=square] table[x=w,y=Error] {graphs/b_a22.dat};
 \addlegendentry{A2}
 	\end{semilogxaxis}
 	\end{tikzpicture}

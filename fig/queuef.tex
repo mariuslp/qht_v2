@@ -1,4 +1,4 @@
-\begin{tikzpicture}[scale=0.4]
+\begin{tikzpicture}[scale=0.37]
 	
 	% F_0 under construction
 	\draw[pattern=north west lines, pattern color=gray, draw=none] (1, 0) rectangle (2, 1);
@@ -40,10 +40,10 @@
 	% legend
 	\draw[draw=none, pattern=north west lines, pattern color=gray] (0.5, -5) rectangle (1, -5.5);
 	\draw (0, -5) rectangle (1, -5.5) node[midway] {\tiny $\mathcal F$};
-	\draw (1.25, -5.25) node[anchor=west] {\tiny Subfilter being populated};
+	\draw (1.25, -5.25) node[anchor=west,align=left] {\tiny Subfilter being\\ \tiny populated};
 	
 	\draw[pattern=north west lines, pattern color=gray] (7, -5) rectangle (8, -5.5) node[midway] {\tiny $\mathcal F_i$};
-	\draw (8.25, -5.25) node[anchor=west] {\tiny Populated active subfilter};
+	\draw (8.25, -5.25) node[anchor=west,align=left] {\tiny Populated active\\\tiny subfilter};
 	
 	\draw[dashed] (14, -5) rectangle (15, -5.5) node[midway] {\tiny $\mathcal F_j$};
 	\draw (1 5.25, -5.25) node[anchor=west] {\tiny Expired subfilter};

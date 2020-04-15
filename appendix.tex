@@ -1,0 +1,224 @@
+
+
+\section{Effects of the simulation's finiteness}
+\label{app:finite}
+
+Theoretical results about the queuing construction apply in principle to an infinite stream. However, simulations are necessarily finite, and for very large windows (that are approximately the same size as the whole stream) this causes interesting artefacts in the error rates.
+
+Note that these effects have very little impact on practical implementations of queuing filters, since almost all use cases assume a window size much smaller than the stream (or, equivalently, a very large stream). Nevertheless we illustrate the effect of the finite simulation and the parameters affecting it, if only to motivate a further analytical study of this phenomenon.
+
+Figure~\ref{fig:strangess} measures the error rate as a function of $w$, for different stream sizes $N$. A visible decrease in $ER$ can be found around $w\approx N$. While we do not have any explanation for the difference in the peaks sizes and exact location, we give the hypothesis that it is related to the choice of $|\Gamma|$.
+
+\begin{figure}[t]
+\makebox[\textwidth]{\makebox[1.05\textwidth]{%
+	\begin{minipage}{.5\textwidth}
+	\centering
+		\input{graphs/stream_size_qht.tex}
+		\caption{Error rate for queuing QHT ($L = 10$, $M = 10^5$, $|\Gamma| = 2^{16}$) with streams of size $10^5$ to $10^8$.}\label{fig:strangess}
+	\end{minipage}
+\hfill
+	\begin{minipage}{.5\textwidth}
+		\centering
+		\begin{tikzpicture}
+		\begin{semilogxaxis}[
+			width=\textwidth,
+			legend cell align = left,%
+			legend pos=south east,
+			legend style={nodes={scale=0.7, transform shape}},
+%			legend style={at={(0.02,0.98)},anchor=north west},%
+			xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
+		\addplot[color=teal, mark=triangle] table[x=w,y=Error] {graphs/Queueing_Cuckoo.dat};
+		\addlegendentry{Q\_Cuckoo};
+		\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {graphs/Cuckoo.dat};
+		\addlegendentry{Cuckoo};
+		%%
+		\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {graphs/Queueing_StableBloom.dat};
+		\addlegendentry{Q\_SBF};
+		\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {graphs/SBF.dat};
+		\addlegendentry{SBF};
+		
+		%\addplot[mark=x,^8$}
+		\end{semilogxaxis}
+		
+		\end{tikzpicture}
+		\caption{Comparing performances of the Cuckoo and SBF filters, in `vanilla' setting or when placed in our queueing structure.}\label{fig:appendix_improvement}
+	\end{minipage}
+}}
+\end{figure}
+
+As can be seen on this simulation, there is only disagreement around $w \approx N/L$, and increasing $N$ results in a later and smaller peak. 
+
+It is also possible to run simulations for different alphabet sizes $\Gamma$, which shows that the peak's position increases with $|\Gamma|$, although the relationship is not obvious to quantify.
+
+\section{Filters vs queued filters (complement)}\label{app:improvement}
+We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Filter, as well as the SBF relatively to the queueing SBF. The results are given in Figure~\ref{fig:appendix_improvement}.
+
+\section{Proofs}\label{app:proofs}
+In this appendix, we give the proofs of all theorems stated in the paper. For the sake of convenience, each theorem is restated before giving its proof.
+
+\optwddf*
+
+\begin{proof}
+	We explicitly construct a DDF that performs the detection. Storing all $w$ elements in the sliding window takes $w\log_2(|\Gamma|)$ memory, using a FIFO queue $Q$; however 
+	lookup has a worst-time complexity of $O(w)$. 
+	
+	We therefore rely on an
+	ancillary data structure for the sake of quickly answering lookup questions.
+	Namely we use a dictionary $D$ whose keys are elements from $\Gamma$ and values are counters.
+	
+	When an element $e$ is inserted in the DDF, $e$ is stored and $D[e]$ is incremented (if the key $e$ did not exist in $D$, it is created first, and
+	$D[e]$ is set to $1$). In order to keep the number of stored elements to $w$, 
+	we discard the oldest element $e_\text{last}$ in $Q$. As we do so, we also decrement $D[e_\text{last}]$, and if $D[e_{last}] = 0$ the key is deleted from $D$. The whole insertion procedure is therefore performed in constant time.
+	
+	Lookup of an element $e^\star$ is simply done by looking whether the key $D[e^\star]$ exists, which is done in constant time.
+	
+	The size of the queue is $w\log_2 |\Gamma|$, the size of the dictionary is $w (\log_2 |\Gamma| + \log_2 w)$ (as the dictionary cannot have more than $w$ keys at the same time, a dictionary key occupies $\log_2 |\Gamma|$ bits and a counter cannot go over $w$, thus being less than $\log_2 w$ bits long). Thus a requirement of $w (\log_2(w) + 2\log_2(|\Gamma|))$ bits for this DDF to work.
+
+	Finally this filter does not make any mistake, as the dictionary $D$ keeps an exact account of how many times each element is present in the sliding window.
+\qed\end{proof}
+
+
+\shf*
+\begin{proof}
+	Here again we explicitly construct the filters that attain the theorem's bounds.
+
+	Let $h$ be a hash function with codomain $\{0,1\}^{2 \log_2 w}$.
+The birthday theorem \cite{10.1007/3-540-45708-9_19} states that for a hash function $h$ over $a$ bits, one must on average collect $2^{a/2}$ input-output pairs before obtaining a collision. Therefore $2^{(2 \log_2 w) / 2} = w$ hash values $h(e_i)$ can be computed before having a $50\%$ probability of a collision (here, a collision is when two distinct elements of the stream $e_i, e_j$ with $i \neq j, e_i \neq e_j$ have the same hash, i.e. $h(e_i) = h(e_j)$). The 50\% threshold we impose on $h$ is arbitrary but nonetheless practical.
+
+Let $\mathcal F$ be the following DDF: the filter's state consists in a queue of $w$ hashes, and for each new element $e$, $\mathsf{Detect}(e)$ returns \DUPLICATE if $h(e)$ is present in the queue, \UNSEEN otherwise. $\mathsf{Insert}(e)$ appends $h(e)$ to the queue before popping the queue. 
+
+There is no false negative, and a false positive only happens if the new element to be inserted collides with at least one other element, which happens with probability $1 - (1 - \frac 1{2^{2\log_2w}})^{w} = 1 - (1-\frac1{w^2})^w$, hence an FN of $0$ and a FP of $1 - (1-\frac1{w^2})^w$.
+The queue stores $w$ hashes, and as such requires $w \cdot 2\log_2 w$ bits of memory.
+
+Note that this solution has a time complexity of $O(w)$. Using an additional dictionary, as in the previous proof, but with keys of size $2\log_2(w)$, we get a filter with an error rate of about $\frac 1w$ and constant time for insertion and lookup, using $w \cdot 2\log_2 w + w \cdot (2\log_2(w) + \log_2(w)) = 5w\log_2 w$ bits of memory.
+\qed\end{proof}
+
+\fprSHF*
+
+\begin{proof}
+	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. An SHF has fingerprints of size $h = \frac M{2w} - \frac 12 \log_2 w$.%, while a CSHF has fingerprints of size $h' = \frac Mw$.
+\qed\end{proof}
+
+\asymptoticSaturation*
+
+\begin{proof}
+	By definition, a perfect filter has the lowest possible error rate.
+	With $M$ bits of memory, a perfect filter can store at most $M$ elements in memory \cite[Theorem 2.1]{10.1145/3297280.3297335}. Up to reordering the stream, without loss of generality because it is random, we may assume that the filter stores the $M$ last elements of the stream: any other strategy cannot yield a strictly lower error rate.
+	
+	If an element is already stored in the filter, then the optimal filter will necessarily answer \DUPLICATE. On the other hand, if the element is not in memory, a perfect filter can choose to answer randomly. Let $p$ be the probability that a filter answers \DUPLICATE when an element is not in memory. An optimal filter will lower the error rate of any filter using the same strategy with a different probability.
+	
+	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
+	
+	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
+	\begin{align*}
+		\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
+		& = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) =  \left(1 - \frac{1 - \Pr[\bar C]}{1 - \Pr[\bar D]}\right)(1-p) \\
+		\FN_n &=  \left(1 - \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^M}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p)
+	\end{align*}
+	Hence, the error probability of the filter is
+	\begin{align*}
+		E_n 
+		& = \FN_n + p
+		=  \left(1 - \frac{1 - \left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}\right)(1-p) + p
+		= 1 - \frac{1-\left(1 - \frac{1}{|\Gamma|}\right)^{M}}{1 - \left(1 - \frac 1{|\Gamma|}\right)^n}(1-p),
+	\end{align*}
+	which is minimized when $p = 0$. 
+\qed\end{proof}
+
+\pfpQueue*
+
+\begin{proof}
+	Let $E = (e_1, \dotsc, e_m, \dotsc)$ be a stream and $e^\star \notwdup E$. 
+	
+	Therefore, $e^\star$ is a false positive if and only if at least one subquery $\mathcal F_i.\mathsf{Lookup(e^\star)}$ returns \DUPLICATE. Conversely, $e^\star$ is \emph{not} a false positive when all subqueries $\mathcal F_i.\mathsf{Lookup(e^\star)}$ return \UNSEEN, i.e., when $e^\star$ is not a false positive for each subfilter.
+	
+	Each subfilter has undergone $c$ insertions, safe for the first subfilter which has only undergone $m \bmod c$, we immediately get Eq.~(\ref{eq:queue-pfp}).
+\qed\end{proof}
+
+\pfnQueue*
+
+\begin{proof}
+	Let $E = (e_1, \dotsc, e_m, \dotsc)$ be a stream, let $w$ be a sliding window and let $e^\star \wdup E$. 
+	
+	Then $e^\star$ is a false negative if and only if all subfilters $\mathcal F_i$ answer $\mathcal F_i.\mathsf{Detect}(e^\star) = \UNSEEN$. There can be two cases:
+	\begin{itemize}
+		\item $e^\star$ is present in $\mathcal F_i$'s sub-sliding window;
+		\item $e^\star$ is not present in $\mathcal F_i$'s sub-sliding window.
+	\end{itemize}
+In the first case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is a false negative for $\mathcal F_i$. This happens with probability $\FN_{\mathcal F,c}$ by definition, except for $\mathcal F_0$, for which the probability is $\FN_{\mathcal F, m\bmod c}$.
+
+In the second case, $\mathcal F_i.\mathsf{Detect}(e^\star)$ returns \UNSEEN if and only if $e^\star$ is not a false positive for $\mathcal F_i$, which happens with probability $1-\FP_{\mathcal F,c}$, execpt for $\mathcal F_0$, for which the probability is $1-\FP_{\mathcal F, m\bmod c}$.
+
+Finally, each event is weighted by the probability $p_c$ that $e^\star$ is in $\mathcal F_i$'s sub-sliding window:
+\begin{align*}
+	p_c 
+	& = \Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window | } e^\star \wdup E]\\
+	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window } \cap e^\star \wdup E]}{\Pr[e^\star \wdup E]}\\
+	& = \frac{\Pr[\text{$e^\star$ is in }\mathcal F_i \text{ sub-sliding window}]}{\Pr[e^\star \wdup E]}\\
+%		\end{align*}\begin{align*}p_c
+	& = \frac{1 - \Pr[\text{$e^\star$ is not in }\mathcal F_i \text{ sub-sliding window }]}{1 - \Pr[e^\star \notwdup E]}\\
+	& = \frac{1 - \left(1 - \frac 1{|\Gamma|}\right)^c}{1 - \left(1-\frac{1}{|\Gamma|}\right)^w}
+\end{align*}
+This concludes the proof.
+\qed\end{proof}
+
+\fprQueue*
+
+\begin{proof}
+
+\begin{align*}
+	\FPR_{\mathcal Q, cn}^w
+	& = \frac{1}{cn} \sum_{k=1}^{cn} \FP_{\mathcal Q, k}^w 
+	 = \frac{1}{cn} \sum_{k=1}^{n} \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, k + \ell}^w 
+	 = \frac1c \sum_{\ell = 0}^{c-1} \FP_{\mathcal Q, \ell}^w \\
+	& = \frac1c \sum_{\ell = 0}^{c-1}  1 - (1 - \FP_{\mathcal F, c})^{L-1}(1 - \FP_{\mathcal F}, \ell) \\
+	& = 1 - \frac1c(1 - \FP_{\mathcal F, c})^{L-1}\sum_{\ell = 0}^{c-1} (1-\FP_{\mathcal F, \ell})
+\end{align*}
+\qed\end{proof}
+
+\fnrQueue*
+
+\begin{proof}
+\begin{align*}
+	\FNR_{\mathcal Q, cn}^w 
+	& = \frac{1}{cn} \sum_{k=1}^{cn} \FN_{\mathcal Q, k}^w 
+	 = \frac{1}{cn} \sum_{k=1}^{n} \sum_{\ell = 0}^{c-1} \FN_{\mathcal Q, k + \ell}^w 
+	= \frac1c \sum_{\ell = 0}^{c-1} \FN_{\mathcal Q, \ell}^w \\
+	& = \frac1c \sum_{\ell = 0}^{c-1} u_c^{L-1} u_{\ell} 
+	 = \frac{u_c^{L-1}}{c}  \sum_{\ell = 0}^{c-1}u_\ell
+\end{align*}
+\qed\end{proof}
+
+\fprRes*
+
+\begin{proof}
+	If $cL \leq w$, then information-theoretically the subfilters only have information on elements in the sliding window.
+	The probability of false positive for $\mathcal Q$ is $1 - (1 - \FP_{\mathcal F, c})^L$, which is strictly increasing with $\FP_{\mathcal F,c}$. Hence, the optimal solution is reached by to maximising the probability of false positive in each subfilter $\mathcal F_i$. By hypothesis the latter is bounded above by $p$ after $c$ insertions.
+	
+	On the other hand, if $cL > w$ then oldest filter holds information about elements that are not in the sliding window anymore. Hence, a strategy for the attacker trying to trigger a false positive on $e^\star$ could be to make it so these oldest elements are all equal to $e^\star$. Let $E$ be the optimal adversarial stream for triggering a false positive on the sliding window $w$ with the element $e^\star$, when $cL \leq w$. The adversary $\mathcal A$ can create a new stream $E' = e^\star | e^\star | \dotsc | E$ where $e^\star$ is prepended $cL - w$ times to $E$.
+	
+	After $w$ insertions, the last subfilter will answer $\DUPLICATE$ with probability at least $p$, hence giving a lower bound on $\mathcal A's$ probability of success. If, for some reason, the last subfilter answers $\DUPLICATE$ with probability less than $p$, then the same reasoning as for when $cL \leq w$ still applies, hence we get the correspondig lower bound (which is, in this case, an equality).
+\qed\end{proof}
+
+\fnrRes*
+
+\begin{proof}
+	Let us first prove that a PPT adversary $\mathcal A$ can win the game with probability at least $p^L$.
+	For this, let us consider the adversarial game against the subfilter $\mathcal F$: after $c$ insertions from an aversarial stream $E_c$, $\mathcal A$ choses a duplicate $e^\star$ which will be a false negative with proability $p$.
+	Hence, if $\mathcal A$ crafts, for the filter $\mathcal Q$, the following adversarial stream $E' = E_c \mid E_c \mid \cdots \mid E_c$ consisting of $L$ concatenations of the stream $E_c$, then $e^\star$ is a false negative for $\mathcal Q$ if and only if it is a false negative for all subfilters $\mathcal F_i$, hence a probability of success for $\mathcal A$ of $p^L$.
+	
+	Now, Let us prove the case where $w\leq (L-1)c$. In this case, at any time, $\mathcal Q$ remembers all elements from inside the sliding window. As we have seen in the previous example, the probability of success of $\mathcal A$ is strictly increasing with the probability of each subfilter to answer $\UNSEEN$. The probability of a subfilter to answer $\UNSEEN$ is:
+	
+	\begin{itemize}
+		\item $\FN'_{\mathcal F,c}$ if $e^\star$ is in the subfilter's sub-sliding window;
+		\item $1 - \FP'_{\mathcal F, c}$ if $e^\star$ is not in the subfilter's sub-sliding window
+	\end{itemize}
+	where $\FN'$ and $\FP'$ are the probabilities of false negative and positives on the adversarial stream (which may be different from a random uniform stream).
+	
+	However, since $e^\star$ is a duplicate, it is in at least one subfilter's sub-sliding window. As such, the optimal strategy for $\mathcal A$ is to maximise the probability of all subfilters to answer $\UNSEEN$.  
+	Now, $\FN'_{\mathcal F,c}$ is bounded above by $p$ and $1 - \FP'_{\mathcal F, c}$ is bounded above by $1-q$, so the best strategy is where as many filters as possible answer $\UNSEEN$ with probability $\max(p, 1-q)$, knowing that at least one filter must contain $e^\star$ and as such its probability for returning $\UNSEEN$ is at most $p$, hence the result.
+	
+	Now, let us consider the case when $w > (L-1)c$. We have already introduce the element $e^\star$ in the last $w$ elements, and we want to insert it again. It is possible, for the adversary, to create the following stream $E = (e_1, e_2, \dotsc, e_{c-1}, e^\star, e_{c+1}, \dotsc, e_{Lc}, e_{Lc + 1})$, and to insert $e^\star$ afterwards.
+	
+	When $e_{Lc+1}$ is inserted, all elements $(e_1, \dotsc, e_{c-1}, e^\star)$ are dropped as the oldest subfilter is popped. Hence, in this context $e^\star$ is not in any subfilter anymore, so by adapting the previous analysis, $\mathcal A$ can get a false negative with probability at most $\max(1 - q, p)^{L}$. \qed
+\end{proof}

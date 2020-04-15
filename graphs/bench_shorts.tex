@@ -1,5 +1,5 @@
 % Stream length = 100000
-\begin{filecontents*}[overwrite]{CSHF.dat}
+\begin{filecontents*}[overwrite]{graphs/CSHF.dat}
 	a	b
 	100 	0.802639224503
 	115 	0.492910959288
@@ -52,8 +52,7 @@
 	100000 	99.999713481
 	
 \end{filecontents*}
-
-\begin{filecontents*}[overwrite]{SHF.dat}
+\begin{filecontents*}[overwrite]{graphs/SHF.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 100 	0 	0 	0 	100 	100 	0.04
 112 	0 	0 	0 	100 	100 	0.05
@@ -116,19 +115,17 @@
 79432 	100 	0 	100 	0 	0.06 	25.15
 89125 	100 	0 	100 	0 	0.06 	27.58
 \end{filecontents*}
-
-
 \begin{tikzpicture}
-\begin{semilogxaxis}[%width=0.4\textwidth, 
+\begin{semilogxaxis}[width=\textwidth, 
 	%legend pos = outer north east, 
 	legend style={at={(0.02,0.98)},anchor=north west},%
 	xlabel=$w$, ylabel=$\FPR^w+\FNR^w (\times 100)$]
 
-\addplot[color=blue, mark=o] table[x=w,y=Error] {SHF.dat};
+\addplot[color=blue, mark=o] table[x=w,y=Error] {graphs/SHF.dat};
 \addlegendentry{SHF}
 
-\addplot[color=red, mark=x] table[x=a,y=b] {CSHF.dat};
-\addlegendentry{CSHF}
+%\addplot[color=red, mark=x] table[x=a,y=b] {graphs/CSHF.dat};
+%\addlegendentry{CSHF}
 
 \end{semilogxaxis}
 \end{tikzpicture}

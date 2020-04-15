@@ -1,4 +1,4 @@
-\begin{filecontents*}[overwrite]{10e4.dat}
+\begin{filecontents*}[overwrite]{graphs/10e4.dat}
 a	b
 100	4.066913753380748
 139	15.981172987871725
@@ -51,7 +51,7 @@ a	b
 \end{filecontents*}
 
 
-\begin{filecontents*}[overwrite]{10e5.dat}
+\begin{filecontents*}[overwrite]{graphs/10e5.dat}
 a	b
 100	11.407206651543186
 139	18.53658191272916
@@ -103,7 +103,7 @@ a	b
 714770576	98.80670198074067
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{10e6.dat}
+\begin{filecontents*}[overwrite]{graphs/10e6.dat}
 a	b
 100	9.481029392649955
 139	18.015561334363362
@@ -155,7 +155,7 @@ a	b
 714770576	99.31837397645201
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{10e7.dat}
+\begin{filecontents*}[overwrite]{graphs/10e7.dat}
 a	b
 100	10.353571926428836
 139	17.521907625609686
@@ -208,7 +208,7 @@ a	b
 
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{10e8.dat}
+\begin{filecontents*}[overwrite]{graphs/10e8.dat}
 a	b
 100 	10.6069237795
 139 	17.6562207168
@@ -261,18 +261,22 @@ a	b
 \end{filecontents*}
 
 \begin{tikzpicture}
-\begin{semilogxaxis}[%legend pos=outer north east,
-	legend style={at={(0.02,0.98)},anchor=north west},%
+\begin{semilogxaxis}[
+	width=\textwidth,
+	legend columns=2,
+	legend pos=south east,
+	legend style = {nodes={scale=0.95, transform shape}},
+%	legend style={at={(0.02,0.98)},anchor=north west},%
 	 xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{$10^4$}
-  	\addplot[mark=+,color=blue] table[x=a,y=b] {10e5.dat};
+  	\addplot[mark=+,color=blue] table[x=a,y=b] {graphs/10e5.dat};
 \addlegendentry{$10^5$};
-  	\addplot[mark=x,color=red] table[x=a,y=b] {10e6.dat};
+  	\addplot[mark=x,color=red] table[x=a,y=b] {graphs/10e6.dat};
 \addlegendentry{$10^6$}
-  	\addplot[mark=triangle,color=olive] table[x=a,y=b] {10e7.dat};
+  	\addplot[mark=triangle,color=olive] table[x=a,y=b] {graphs/10e7.dat};
 \addlegendentry{$10^7$}
-  	\addplot[mark=square,color=teal] table[x=a,y=b] {10e8.dat};
+  	\addplot[mark=square,color=teal] table[x=a,y=b] {graphs/10e8.dat};
 \addlegendentry{$10^8$}
 \end{semilogxaxis}
 

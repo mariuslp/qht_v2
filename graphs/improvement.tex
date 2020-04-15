@@ -1,4 +1,4 @@
-\begin{filecontents*}[overwrite]{Queueing_QHT.dat}
+\begin{filecontents*}[overwrite]{graphs/Queueing_QHT.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	0.11 	15.57 	15.68 	84.32 	43.88 	0.04
 	500 	0.53 	17.47 	18. 	82. 	43.34 	0.19
@@ -38,7 +38,7 @@
 	%%	500000 	23.66 	64.68 	88.34 	11.66 	9.14 	83.67
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{QHT.dat}
+\begin{filecontents*}[overwrite]{graphs/QHT.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	25.14 	0.05 	25.19 	74.81 	3.36 	0.04
 	500 	25.03 	0.65 	25.67 	74.33 	7.47 	0.19
@@ -59,7 +59,7 @@
 	500000 	14.11 	72.67 	86.78 	13.22 	11.26 	83.67
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{Queueing_Cuckoo.dat}
+\begin{filecontents*}[overwrite]{graphs/Queueing_Cuckoo.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	4.04 	15.05 	19.09 	80.91 	7.97 	0.04
 	500 	18.4 	14.19 	32.59 	67.41 	7.57 	0.19
@@ -99,7 +99,7 @@
 
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{Cuckoo.dat}
+\begin{filecontents*}[overwrite]{graphs/Cuckoo.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	30.52 	18.26 	48.78 	51.22 	2.17 	0.04
 	500 	30.45 	19.11 	49.56 	50.44 	4.78 	0.19
@@ -120,7 +120,7 @@
 	500000 	28.29 	69.02 	97.31 	2.69 	2.16 	83.67
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{Queueing_SQF.dat}
+\begin{filecontents*}[overwrite]{graphs/Queueing_SQF.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	0.26 	15.6 	15.86 	84.14 	30.54 	0.04
 	500 	1.26 	17.48 	18.74 	81.26 	30.03 	0.19
@@ -165,7 +165,7 @@
 	%	
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{SQF.dat}
+\begin{filecontents*}[overwrite]{graphs/SQF.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	34.26 	0.11 	34.37 	65.63 	2.69 	0.04
 	500 	34.17 	0.55 	34.72 	65.28 	6 	0.19
@@ -186,7 +186,7 @@
 	500000 	24.58 	63.82 	88.4 	11.6 	9.04 	83.67
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{Queueing_StableBloom.dat}
+\begin{filecontents*}[overwrite]{graphs/Queueing_StableBloom.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	2.01 	15.13 	17.14 	82.86 	11.41 	0.04
 	500 	9.5 	15.57 	25.07 	74.93 	11.07 	0.19
@@ -238,7 +238,7 @@
 
 \end{filecontents*}
 
-\begin{filecontents*}[overwrite]{SBF.dat}
+\begin{filecontents*}[overwrite]{graphs/SBF.dat}
 	w	 FPR 	 FNR 	 Error 	 1-E 	 Phi 	 percentDup
 	100 	27.63 	0 	27.63 	72.37 	3.15 	0.04
 	500 	27.51 	0 	27.51 	72.49 	7.07 	0.19
@@ -266,18 +266,18 @@
 	 %legend pos=outer north east,
 	 legend pos = north west,
 	%legend style={at={(0.02,0.98)},anchor=north west},%
-	  %width=0.35\textwidth, 
+	  width=0.5\textwidth, 
 	  xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
 %  	\addplot table[x=a,y=b] {10e4.dat};
 %\addlegendentry{$10^4$}
-\addplot[color=red, mark=+] table[x=w,y=Error] {Queueing_QHT.dat};
+\addplot[color=red, mark=+] table[x=w,y=Error] {graphs/Queueing_QHT.dat};
 \addlegendentry{Q\_QHT};
-\addplot[color=red, mark=+, dashed] table[x=w,y=Error] {QHT.dat};
+\addplot[color=red, mark=+, dashed] table[x=w,y=Error] {graphs/QHT.dat};
 \addlegendentry{QHT};
 
-\addplot[color=blue, mark=x] table[x=w,y=Error] {Queueing_SQF.dat};
+\addplot[color=blue, mark=x] table[x=w,y=Error] {graphs/Queueing_SQF.dat};
 \addlegendentry{Q\_SQF};
-\addplot[color=blue, mark=x, dashed] table[x=w,y=Error] {SQF.dat};
+\addplot[color=blue, mark=x, dashed] table[x=w,y=Error] {graphs/SQF.dat};
 \addlegendentry{SQF};
 %%
 %\addplot[color=teal, mark=triangle] table[x=w,y=Error] {Queueing_Cuckoo.dat};
