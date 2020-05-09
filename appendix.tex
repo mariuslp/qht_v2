@@ -37,14 +37,14 @@ We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Fi
 			legend style={nodes={scale=0.7, transform shape}},
 			%			legend style={at={(0.02,0.98)},anchor=north west},%
 			xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$]
-		\addplot[color=teal, mark=triangle] table[x=w,y=Error] {graphs/Queueing_Cuckoo.dat};
+		\addplot[color=teal, mark=triangle] table[x=w,y=Error] {graphs/queueing_cuckoo.dat};
 		\addlegendentry{Q\_Cuckoo};
-		\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {graphs/Cuckoo.dat};
+		\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {graphs/cuckoo.dat};
 		\addlegendentry{Cuckoo};
 		%%
-		\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {graphs/Queueing_StableBloom.dat};
+		\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {graphs/queueing_stablebloom.dat};
 		\addlegendentry{Q\_SBF};
-		\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {graphs/SBF.dat};
+		\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {graphs/sbf.dat};
 		\addlegendentry{SBF};
 		\end{semilogxaxis}
 	
