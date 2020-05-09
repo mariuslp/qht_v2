@@ -2,11 +2,11 @@
 % LLNCS macro package for Springer Computer Science proceedings;
 % Version 2.20 of 2017/10/04
 %
-\documentclass[runningheads]{llncs}
+\documentclass[]{article}
 %
 \input{preamble}
 %\usepackage{times}
-\usepackage[moderate]{savetrees}
+%\usepackage[moderate]{savetrees}
 \usepackage{multicol}
 
 \usepackage{graphicx}
@@ -14,6 +14,19 @@
 % Several figures with different labels
 \usepackage{float}
 \restylefloat*{figure}
+
+
+\usepackage{authblk}
+% Keywords command
+\providecommand{\keywords}[1]
+{
+	\small	
+	\textbf{\textit{Keywords---}} #1
+}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\newtheorem{definition}{Definition}
+\newtheorem{theorem}{Theorem}
 
 % Used for displaying a sample figure. If possible, figure files should
 % be included in EPS format.
@@ -31,18 +44,22 @@
 % If the paper title is too long for the running head, you can set
 % an abbreviated paper title here
 %
-\author{Rémi Géraud--Stewart\inst{1} \and
-Marius Lombard-Platet\inst{1,2} \and
-David Naccache\inst{1}}
+\author[1]{Rémi Géraud--Stewart}
+\author[1,2]{Marius Lombard-Platet}
+\author[1]{David Naccache}
+\affil[1]{Département d'informatique de l'ENS, ENS, CNRS, PSL Research University, Paris, France}
+\affil[2]{Be-ys Research Lab, Clermont-Ferrand, France}
+\affil[ ]{\texttt{\{first\}.\{last\}@ens.fr}}
 %
+\date{}
 %\authorrunning{F. Author et al.}
 % First names are abbreviated in the running head.
 % If there are more than two authors, 'et al.' is used.
 %
-\institute{Département d'informatique de l'ENS, ENS, CNRS, PSL Research University, Paris, France \and
-Be-ys Research Lab, Clermont-Ferrand, France\\
-\email{\{first\}.\{last\}@ens.fr}
-}
+%\institute{Département d'informatique de l'ENS, ENS, CNRS, PSL Research University, Paris, France \and
+%Be-ys Research Lab, Clermont-Ferrand, France\\
+%\email{\{first\}.\{last\}@ens.fr}
+%}
 %
 \maketitle              % typeset the header of the contribution
 %
@@ -61,7 +78,7 @@ Unfortunately the infinite stream setting is ill-posed, and error rates of dupli
 In this paper we formalize the sliding window setting introduced by \cite{She08,Yoo10}, and show that a perfect (zero error) solution can be used up to a maximal window size $w_\text{max}$. Above this threshold we show that some existing duplicate detection filters (designed for the \emph{non-windowed} setting) perform better that those targeting the windowed problem. Finally, we introduce a \enquote{queuing construction} that improves on the performance of some duplicate detection filters in the windowed setting.
 
 We also analyse the security of our filters in an adversarial setting. 
-\keywords{TODO}
+\keywords{Duplicate detection, Streaming algorithms, Sliding window}
 \end{abstract}
 %
 %
@@ -73,9 +90,11 @@ We also analyse the security of our filters in an adversarial setting.
 % BibTeX users should specify bibliography style 'splncs04'.
 % References will then be sorted and formatted in the correct style.
 %
+
  \bibliographystyle{splncs04}
-\bibliography{bibli_short}
-%\bibliography{qhtv2}
+
+%\bibliography{bibli_short}
+\bibliography{qhtv2}
 
 \appendix
 \input{appendix}
