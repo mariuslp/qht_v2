@@ -45,7 +45,7 @@ The notion of sliding window was, as far as we know, first introduced in \cite{1
 The wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introduce algorithms for solving the wDDP approximately.
 
 The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a construction which we generalize and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
-%A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not designed for wDDP but a variant called `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
+Literature review collects the following DDFs \cite{Yoo10,Den06,10.1145/3297280.3297335,Dut13,She08,Fan14}, which we will consider in this paper . The structure proposed in \cite{10.1145/1060745.1060753} is not designed for wDDP but a variant called `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
 %\section{Duplicate Detection and Filter Saturation}
 \label{sec:dudefisa}
 \section{Notations and basic definitions}
