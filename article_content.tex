@@ -46,6 +46,8 @@ The wDDP formulation we rely on is due to \cite{Yoo10,She08}, which also introdu
 
 The notion of using subfilters, as in the queuing construction, can be found in the A2 filter's design \cite{Yoo10} and a variation thereof can be found in \cite{shtul2020agepartitioned} but in a different DDP formulation. The A2 is built from two Bloom filters, a construction which we generalize and analyse generically in this paper. Similarly, the construction in \cite{shtul2020agepartitioned} only works with Bloom Filters.
 
+A literature review collects the following DDF constructions: A2 filters \cite{Yoo10}, Stable Bloom Filters (SBF) \cite{Den06}, Quotient Hash Tables (QHT) \cite{10.1145/3297280.3297335}, Streaming Quotient Filters (SQF) \cite{Dut13}, Block-decaying Bloom Filters (b\_DBF) \cite{She08}, and a slight variation of Cuckoo Filters \cite{Fan14} suggested by \cite{10.1145/3297280.3297335}. The structure proposed in \cite{10.1145/1060745.1060753} is not designed for wDDP but a variant called `landmark` sliding window, which consists of a zero-resetting of the memory at some user-defined epochs.
+
 %\section{Duplicate Detection and Filter Saturation}
 \label{sec:dudefisa}
 \section{Notations and basic definitions}
@@ -208,7 +210,7 @@ This gives us the Short Hash Filter (SHF), described in Algorithm~\ref{alg:SHF}.
 
 \paragraph{Compact Short Hash Filter (CSHF)}
 %\subsection{Compact Short Hash Filter}
-Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, one stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
+Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, the filter stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
 
 %\begin{algorithm}[!h]
 %	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
@@ -258,7 +260,7 @@ We write $\FN^w_\text{SHF}$ the probability of false negative of an SHF with the
 	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. An SHF has fingerprints of size $h = \frac M{2w} - \frac 12 \log_2 w$, while a CSHF has fingerprints of size $h' = \frac Mw$.
 \end{proof}
 
-\paragraph{Remark:} A CSHF of size $M$ on a sliding window $w$ has the same error rate than an SHF of sliding window of size $2M + w\log_2 w$.
+\paragraph{Remark:} A CSHF of size $M$ on a sliding window $w$ has the same error rate than an SHF of sliding window $w$ of size $2M + w\log_2 w$.
 
 \paragraph{Saturation.}
 SHF has strictly increasing error probabilities, which reach a threshold of $1/2$ for some maximum window size $w_\text{max}$. Beyond this value, these filters saturate extremely quickly: in other words, most SHF will either have an error rate of $0$ or $1$.
@@ -309,7 +311,7 @@ $$
 	
 	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
 	
-	On the other hand, a duplicate $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
+	On the other hand, a duplicate $e^\star \in E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
 	\begin{align*}
 	\FN_n &= (1 - \Pr[C | D])(1-p) \\ &=  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)\\
 	&= \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) \\
@@ -642,7 +644,7 @@ Indeed, a simple symmetry argument shows that a heterogenous selection of subfil
 
 It remains to decide which subfilter construction to choose. The results of an experimental comparison of different DDFs (details about the benchmark are given in Section~\ref{sub:saturation}) are summarized in Figure~\ref{fig:graph_n}. It appears that the most efficient filter (in terms of saturation rate) is the QHT, from \cite{10.1145/3297280.3297335}.
 
-%As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and Bloom filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
+%As noted in Section~\ref{sub:related}, A2 filters are a primitive form of a queuing filter (with $L=2$ and  filters as subfilters) and thus were not included in this benchmark, as we focused on adapting filters designed for DDP to the sliding window DDP. This raises the question of whether recursive constructions (queuing filters of queuing filters) have particularly interesting properties, which we leave open for future work. 
 
 %In the experiments we use QHT for the benchmarking of the queuing construction.
 
