@@ -55,7 +55,7 @@ We here run a comparison of the Cuckoo Filter relative to the Queueing Cuckoo Fi
 
 
 \section{Compact Hash Short Filter}\label{app:CSHF}
-Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, one stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
+Removing the dictionary from the SHF construction yields a more memory-efficient, but less time-efficient construction, which we dub \enquote{compact} short hash filter (CSHF). The CSHF performs in linear time in $w$, and is a simple queue, the only point is that instead of storing $e$, the filter stores $h(e)$, where $h$ is a hash function of codomain size $\lfloor \frac Mw \rfloor$.% and is described in Algorithm~\ref{alg:CSHF}.
 
 %\begin{algorithm}[!h]
 %	\caption{CSHF, Setup, Lookup and Insert}\label{alg:CSHF}
@@ -93,7 +93,7 @@ Let $w> 0$ be a window size and $M > 0$ the available memory.
 
 %We write $\FN^w_\text{SHF}$ the probability of false negative of an SHF with these parameters. We similarly define $\FP^w_\text{SHF}$.%, $\FN^w_\text{CSHF}$, $\FP^w_\text{CSHF}$. 
 
-\begin{restatable}{thm}{fprSHF}\label{thm:fprCHF}	
+\begin{restatable}{thm}{fprCSHF}\label{thm:fprCHF}	
 	$\FN_\text{CSHF}^w  = 0$  and $\FP_\text{CSHF}^w = 1 - \left(1 - 2^{-M/w}\right)^w$
 \end{restatable}
 
@@ -101,7 +101,7 @@ Let $w> 0$ be a window size and $M > 0$ the available memory.
 	This is an immediate adaptation of the proof from Theorem~\ref{thm:SHF}. A CSHF has fingerprints of size $h' = \frac Mw$.
 \end{proof}
 
-\paragraph{Remark:} A CSHF of size $M$ has the same error rate than an SHF of size $2M + w\log_2 w$.
+\paragraph{Remark:} A CSHF of size $M$ on a sliding window $w$ has the same error rate than an SHF of sliding window $w$ and size $2M + w\log_2 w$.
 
 \paragraph{Saturation.}
 Simlarly to SHF, CSHF saturates quickly over a certain $w_\text{max}$. We compare SHF and CSHF saturations in Figure~\ref{fig:app_shorts}.
@@ -171,7 +171,7 @@ Note that this solution has a time complexity of $O(w)$. Using an additional dic
 	
 	An unseen element, by definition, will be unseen in the $M$ last elements of the stream, and hence will not be in the filter's memory, so the filter will return \UNSEEN with probability $1-p$. For this reason, this filter has an FP probability of $p$.
 	
-	On the other hand, $e^\star \dup E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
+	On the other hand, a duplicate $e^\star\in E$ is classified as \UNSEEN if and only if it was not seen in the last $M$ elements of the stream, and the filter answers \UNSEEN. Let $D$ be the event \enquote{\emph{There is at least one duplicate in the stream}} and $C$ be the event \enquote{\emph{There is a duplicate of $e^\star$ in the $M$ previous elements of the stream}}. Then $e^\star$ triggers a false negative with probability
 	\begin{align*}
 		\FN_n &= (1 - \Pr[C | D])(1-p) =  \left(1 - \frac{\Pr[C \cap D]}{\Pr[D]}\right)(1-p)
 		 = \left(1 - \frac{\Pr[C]}{\Pr[D]}\right)(1-p) \\
