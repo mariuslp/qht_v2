@@ -1,5 +1,90 @@
+\section{SHF and queueing filter algorithms}\label{app:algo}
+In this appendix, we give the pseudocode of our two structures, which we removed from the main part of the paper for page limit reasons.
+\begin{algorithm}
+	\caption{SHF \textsf{Setup}, \textsf{Lookup} and \textsf{Insert}}\label{alg:SHF}
+	
+	\begin{algorithmic}[1]
+		\Function{Setup}{$M, w$}
+		\Comment $M$ is the available memory, $w$ the size of the sliding window
+		\State $h \gets$ hash function of codomain size $\lfloor \frac M{2w} - \frac 12 \log_2 w \rfloor$ bits
+		\State $Q \gets \emptyset$ \Comment $Q$ is a queue of elements of size $h$
+		\State $D \gets \emptyset$ \Comment $D$ is a dictionary $h \Rightarrow$  counter (of max value $w$)
+		\EndFunction 
+	\end{algorithmic}
+	
+	\begin{multicols}{2}
+		\begin{algorithmic}[1]
+			\Function{Insert}{$e$}
+			\State $Q.\mathsf{Push\_Front}(h(e))$
+			\State $D[h(e)]$++
+			
+			\If{$Q.\mathsf{length}() > w$}
+			\State $h' \gets Q.\mathsf{Pop\_back}()$
+			\State $D[h']$-{}-
+			\If{$D[h'] = 0$}
+			\State Erase key $D[h']$
+			\EndIf
+			\EndIf
+			\EndFunction
+		\end{algorithmic}	
+		
+		\begin{algorithmic}[1]
+			\item[]
+			\Function{Lookup}{$e$}
+			\If{$D[h(e)] > 0$}
+			\State \Return \DUPLICATE
+			\Else
+			\State \Return \UNSEEN
+			\EndIf
+			\EndFunction
+			\item[]
+		\end{algorithmic}
+		
+		
+	\end{multicols}
+\end{algorithm}
 
-
+\begin{algorithm}[]
+	\caption{Queuing Filter \textsf{Setup}, \textsf{Lookup} and \textsf{Insert}}\label{alg:queuing}
+	\begin{algorithmic}[1]
+		\Function{Setup}{$\mathcal F, M, L, c$}
+		\Comment $M$ is the available memory, $\mathcal F$ the subfilter structure, $L$ the number of subfilters and $c$ the number of insertions per subfilter
+		\State subfilters $\gets \emptyset$
+		\State counter $\gets 0$
+		\State $m \gets \lfloor M/L \rfloor$
+		\For{$i$ from $0$ to $L-1$}
+		\State subfilters.push\_first$(\mathcal F.\mathsf{Setup}(m))$
+		\EndFor
+		\State \textbf{store} (subfilters, $L$, $m$, counter)
+		%		\State\Return filter
+		\EndFunction 
+	\end{algorithmic}
+	
+	\begin{multicols}{2}
+		\begin{algorithmic}[1]
+			\Function{Lookup}{$e$}
+			\For{$i$ from $0$ to $L-1$}
+			\If{subfilters[i]$.\mathsf{Lookup(e)}$}
+			\State \Return $\DUPLICATE$			
+			\EndIf
+			\EndFor
+			\State \Return \UNSEEN
+			\EndFunction
+			\item[]
+		\end{algorithmic}
+		
+		\begin{algorithmic}[1]
+			\Function{Insert}{$e$}
+			\State subfilters[0]$.\mathsf{Insert}(e)$
+			\State counter$++$
+			\If{counter == $c$}
+			\State subfilters.pop()
+			\State subfilters.push\_first($\mathcal F.\textsf{Setup}(m)$)
+			\EndIf
+			\EndFunction
+		\end{algorithmic}
+	\end{multicols}
+\end{algorithm}
 \section{Effects of the simulation's finiteness}
 \label{app:finite}
 
