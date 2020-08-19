@@ -1,7 +1,11 @@
-*.aux
-*.bbl
+**/*.aux
+**/*.bbl
 *.pdf
-*.log
-*.out
-*.synctex.gz
-*.blg
+**/*.log
+**/*.out
+**/*.synctex.gz
+**/*.blg
+**/*.nav
+**/*.snm
+**/*.toc
+**/*.vrb

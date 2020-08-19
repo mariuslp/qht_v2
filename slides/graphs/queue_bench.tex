@@ -1,0 +1,35 @@
+\begin{tikzpicture}
+\begin{semilogxaxis}[legend cell align = left,%
+%legend pos=outer north east,
+legend pos = north west,
+%legend style={at={(0.02,0.98)},anchor=north west},%
+%	  width=0.5\textwidth, 
+xlabel=$w$, ylabel=$\FPR^w + \FNR^w (\times 100)$,
+xmin=40]
+%  	\addplot table[x=a,y=b] {10e4.dat};
+%\addlegendentry{$10^4$}
+\addplot[color=blue] table[x=w,y=Error] {graphs/queueing_qht.dat};
+\addlegendentry{Queuing QHT};
+\addplot[color=red, dashed] table[x=w,y=Error] {graphs/qht.dat};
+\addlegendentry{QHT};
+
+\addplot [draw=none,pattern=north west lines,pattern color=black,domain=10:1843,stack plots=y] {100} \closedcycle;
+%\addplot[color=blue, mark=x] table[x=w,y=Error] {graphs/queueing_sqf.dat};
+%\addlegendentry{Q\_SQF};
+%\addplot[color=blue, mark=x, dashed] table[x=w,y=Error] {graphs/sqf.dat};
+%\addlegendentry{SQF};
+%%
+%\addplot[color=teal, mark=triangle] table[x=w,y=Error] {Queueing_Cuckoo.dat};
+%\addlegendentry{Q\_Cuckoo};
+%\addplot[color=teal, mark=triangle, dashed] table[x=w,y=Error] {Cuckoo.dat};
+%\addlegendentry{Cuckoo};
+%%%
+%\addplot[color=olive, mark=square, mark options = {scale=0.7}] table[x=w,y=Error] {Queueing_StableBloom.dat};
+%\addlegendentry{$Q\_SBF$};
+%\addplot[color=olive, mark=square, mark options = {scale=0.7}, dashed] table[x=w,y=Error] {SBF.dat};
+%\addlegendentry{$SBF$};
+
+%\addplot[mark=x,^8$}
+\end{semilogxaxis}
+
+\end{tikzpicture}

@@ -1,0 +1,38 @@
+\begin{tikzpicture}[scale=0.37]
+	
+	% First subfilter
+	\draw<-8> (11, 0) rectangle (13, 1) node[midway] {$\mathcal F_0$}; \pause
+	
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (12, 0) rectangle (13, 1);\pause
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (11, 0) rectangle (12, 1);
+	\draw [<->,>=latex] (11, 1.5) -- (13, 1.5) node[above, midway] {\footnotesize $c$ elements}; \pause
+	
+	\draw<-8> (8, 0) rectangle (10, 1) node[midway] {$\mathcal F_1$};\pause
+	
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (10, 0) rectangle (9, 1);\pause
+	
+	\draw[pattern=north west lines, pattern color=gray, draw=none] (8, 0) rectangle (10, 1);
+
+	\node at (6.5, 0.3) {...};
+	
+	\draw<-8> (3, 0) rectangle (5, 1) node[midway] {$\mathcal F_{L-1}$};
+	\draw [pattern=north west lines, pattern color=gray, draw=none] (3, 0) rectangle (5, 1);
+	\draw<-8> (0, 0) rectangle (2, 1) node[midway] {$\mathcal F_L$};
+	\draw (-0.5, 2.5) rectangle (14.1, -2.5) node[anchor=south east] {Queuing filter}; \pause
+	
+	\draw<-8>[pattern=north west lines, pattern color=gray, draw=none] (0, 0) rectangle (2, 1); \pause
+	
+
+	% We shift the filters
+	\draw (11, 0) rectangle (13, 1) node[midway] {$\mathcal F_1$};
+	\draw (8, 0) rectangle (10, 1) node[midway] {$\mathcal F_2$};
+	\draw (3, 0) rectangle (5, 1) node[midway] {$\mathcal F_{L}$};
+	% old subfilters
+	\draw[dashed] (15, 0) rectangle (17, 1) node[midway] {$\mathcal F_{0}$}; \pause
+	\draw (0, 0) rectangle (2, 1) node[midway] {$\mathcal F_{L+1}$}; \pause
+%	\draw[dashed] (17, 0) rectangle (19, 1) node[midway] {$\mathcal F_{L+1}$};
+	
+	% arrows
+%	\draw [<->,>=latex] (0, -3) -- (13, -3) node[below, midway] {Capacity of $Lc \approx w$ elements};
+	\draw [<->,>=latex] (1, 3) -- (16, 3) node[above, midway] {Current sliding window (of size $w$)};
+	\end{tikzpicture}

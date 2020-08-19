@@ -1,0 +1,15 @@
+\begin{tikzpicture}
+\begin{semilogxaxis}[%legend pos = outer north east, 
+	legend pos= north east,%
+	xlabel=$w$, ylabel=$\FPR^w+\FNR^w (\times 100)$, xmin=40,ymin=0,mlineplot]
+
+\addplot[color=blue, mark=o] table[x=w,y=Error] {graphs/shf.dat};
+
+\addplot [draw=none,pattern=north west lines,pattern color=black,domain=10:1843,stack plots=y] {100} \closedcycle;
+\addlegendentry{SHF}
+
+%\addplot[color=red, mark=x] table[x=a,y=b] {graphs/CSHF.dat};
+%\addlegendentry{CSHF}
+
+\end{semilogxaxis}
+\end{tikzpicture}
